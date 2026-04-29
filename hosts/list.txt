@@ -1,1 +1,0 @@
-https://github.com/Suntrax/darling/releases/download/v3.9.7/app-arm64-v8a-release.apk
