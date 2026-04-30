@@ -1,17 +1,15 @@
 remote_theme: dieghernan/chulapa
 
-title: SCPF-Bot
+title: Heighxomium
 subtitle: Private Website
 
 author:
-  name                  :      SCPF-Bot
+  name                  :      Heighxomium
   avatar                :      https://avatars.githubusercontent.com/u/112224835
   location              :      SCP Foundation (Site-19)
   links:                
     - url: https://fb.me/june.12th.2019
       icon: "fab fa-facebook"
-    - url: https://github.com/SCPF-Archive
-      icon: "fab fa-github"
     - url: https://github.com/SCPF-Bot
       icon: "fab fa-github"
     - url: ph.server@pm.me
@@ -27,31 +25,6 @@ navbar:
 
   - title: Home
     url: /index
-
-  - title: E-Tech
-    child:
-     - title: Web Versions
-       url: /pages/index.pages/web.versions
-
-  - title: Babii
-    child:
-     - title: Diary Index
-       url: /pages/index.pages/diary.index
-     - title: To-Do List
-       url: /pages/misc/to.do.list
-     - title: Archive
-       url: /pages/archive/readme
-
-  - title: Zero to Stable
-    child:
-     - title: Introduction
-       url: /pages/zero.to.stable/page.000
-     - title: Phase 1
-       url: /pages/zero.to.stable/page.001
-     - title: Phase 2
-       url: /pages/zero.to.stable/page.002
-     - title: Phase 3
-       url: /pages/zero.to.stable/page.003
 
   - title: Special Thanks
     url: /pages/misc/special.thanks
@@ -91,27 +64,6 @@ comments:
 # Collections path where you place your posts.
 # (Ex. pages/collections/_my.posts/post1.md)
 collections:
-  e.tech:
-    output: true
-    permalink: /e.tech/:name
-  diary.index.2019:
-    output: true
-    permalink: /diary.index.2019/:name
-  diary.index.2020:
-    output: true
-    permalink: /diary.index.2020/:name
-  diary.index.2021:
-    output: true
-    permalink: /diary.index.2021/:name
-  diary.index.2022:
-    output: true
-    permalink: /diary.index.2022/:name
-  diary.index.2023:
-    output: true
-    permalink: /diary.index.2023/:name
-  diary.index.2024:
-    output: true
-    permalink: /diary.index.2024/:name
   diary.index.2025:
     output: true
     permalink: /diary.index.2025/:name
@@ -132,60 +84,6 @@ defaults:
       layout: "default"
       include_on_search : false
       show_comments     : true
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2019"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2020"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2021"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2022"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2023"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
-      show_date         : false
-
-  -
-    scope:
-      path: "pages/_collections/_diary.index.2024"
-    values:
-      header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
-      show_comments     : false
       show_date         : false
 
   -
