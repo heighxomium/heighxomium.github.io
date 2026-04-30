@@ -15,7 +15,6 @@ author:
     - url: ph.server@pm.me
       icon: "fa fa-envelope"
 
-# Navigation Bar contents.
 navbar:
   style: "classic"
   brand:
@@ -27,53 +26,24 @@ navbar:
   - title: Special Thanks
     url: /pages/misc/special.thanks
 
-footer:
-  links:
-    - label : Facebook
-      icon  : fab fa-facebook
-      url   : https://fb.me/ultimatinium
-    - label : GitHub
-      icon  : fab fa-github
-      url   : https://github.com/SCPF-Bot
-    - label : Proton Mail
-      icon  : fa fa-envelope
-      url   : ph.server@pm.me
-  copyright: © 2022 by SCPF-Bot
-
-# Font URL for Google fonts.
-googlefonts:
- - url: https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap
-
-# Theme Skins.
 chulapa-skin: 
   skin: gitdev-dark
   vars:
     font-family-base: "Ubuntu Mono"
 
-# Comments provider for the webpage.
 comments:
-  #provider: giscus #https://giscus.app
+  provider: giscus #https://giscus.app
   #provider: welcomments
   #website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
   #provider: disqus #https://disqus.com
   #disqus_shortname: scpf-archive
 
-#### Defaults (Do not modify.)
-# Collections path where you place your posts.
-# (Ex. pages/collections/_my.posts/post1.md)
+collections_dir: pages/_collections
 collections:
   posts:
     output: true
-    permalink: /posts/:name
+    permalink: /:collection/:name/
 
-# Collections directory path.
-# (Ex. pages/collections or yourpreferredname/yourpreferredname)
-collections_dir     : pages/_collections
-
-# Note: Defaults for page customizations.
-# Used for layouts and design for all or specific collection pages.
-# (Ex. Edits the layout and design of all the pages of my.posts collection directory to specified strings.)
-# Please consider reading note before editing.
 defaults:
   -
     scope:
@@ -109,8 +79,6 @@ exclude:
   - LICENSE
   - Gemfile
   - vendor
-
-include:
   - readme
 
 markdown: kramdown
