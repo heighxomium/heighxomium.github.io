@@ -70,7 +70,7 @@ collections:
 
 # Collections directory path.
 # (Ex. pages/collections or yourpreferredname/yourpreferredname)
-collections_dir     : pages/_collections
+collections_dir     : pages/collections
 
 # Note: Defaults for page customizations.
 # Used for layouts and design for all or specific collection pages.
@@ -88,7 +88,7 @@ defaults:
 
   -
     scope:
-      path: "pages/_collections/_diary.index.2025"
+      path: "pages/collections/diary.index.2025"
     values:
       header_type       : "hero"
       header_img        : assets/images/main.003.jpeg
