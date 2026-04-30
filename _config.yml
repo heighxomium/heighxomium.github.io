@@ -17,7 +17,7 @@ author:
 
 # Navigation Bar contents.
 navbar:
-  style: "fab"
+  style: "classic"
   brand:
     title: Heighxomium
     img: "https://avatars.githubusercontent.com/u/280498728"
@@ -86,12 +86,13 @@ defaults:
 
   -
     scope:
-      path: "pages/collections/diary.index.2025"
+      path: "pages/collections/posts"
     values:
       header_type       : "hero"
       header_img        : assets/images/main.003.jpeg
       show_comments     : false
       show_date         : false
+      show_bottomnavs   : true
 
 # Miscellaneous options.
 compress_html:
