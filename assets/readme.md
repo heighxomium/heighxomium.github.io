@@ -4,9 +4,8 @@
 
 #### Images Directory
 
-For all the attachment image in `/assets/images/` directory that will be used in `/pages/collections/` and `/pages/misc/` directory, please follow the file name procedure...
+For all the attachment image in `/assets/images` directory that will be used in `/pages` directory, please follow the file name procedure...
 - It should only be in `.jpeg` or `.png` extension...
-- Follows file name identification sequence...
 - The file name identification should always be divided by using a period...
 - The file name identification should follow the sequence below:
   1. Primary sequence number of file...
@@ -24,7 +23,7 @@ primary-sequence.secondary-sequence.extension
 
 #### Note
 
-Do not alter the files inside the `/assets/images/` directory that contains the keyword `main` in the file name identification for it is used in the main interface of the website...
+Do not alter the files inside the `/assets/images` directory that contains the keyword `main` in the file name identification for it is used in the main interface of the website...
 
 Example:
 
@@ -46,14 +45,14 @@ For the videos directory, it's pretty straightforward because you can use it in 
 
 ```
 The file name identification should look like this:
-final.directory-collection.name-attachment.number.extension
+final.directory-page.name-attachment.number.extension
 
 Example for directory /pages/any.directory/diary.index.2025/
 diary.index.2025-2025.06.12-001.mp4
 
 Another example for directory /pages/any.directory/any.directory/_diary.index.2025/
-diary.index.2025-2019.06.12-001.mkv
-diary.index.2025-2019.06.12-002.mp4
+misc-page.001-001.mkv
+data-page.003-002.mp4
 ```
 
 #### Note
