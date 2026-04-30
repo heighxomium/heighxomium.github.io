@@ -89,7 +89,7 @@ defaults:
       path: "pages/collections/posts"
     values:
       header_type       : "hero"
-      header_img        : assets/images/main.003.jpeg
+      header_img        : assets/images/main.001.jpeg
       show_comments     : false
       show_date         : false
       show_bottomnavs   : true
