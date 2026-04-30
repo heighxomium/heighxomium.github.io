@@ -68,7 +68,7 @@ collections:
 
 # Collections directory path.
 # (Ex. pages/collections or yourpreferredname/yourpreferredname)
-collections_dir     : pages/collections
+collections_dir     : pages/_collections
 
 # Note: Defaults for page customizations.
 # Used for layouts and design for all or specific collection pages.
