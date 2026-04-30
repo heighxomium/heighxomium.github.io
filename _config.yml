@@ -62,9 +62,9 @@ comments:
 # Collections path where you place your posts.
 # (Ex. pages/collections/_my.posts/post1.md)
 collections:
-  diary.index.2025:
+  posts:
     output: true
-    permalink: /diary.index.2025/:name
+    permalink: /posts/:name
 
 # Collections directory path.
 # (Ex. pages/collections or yourpreferredname/yourpreferredname)
