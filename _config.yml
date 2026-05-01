@@ -57,6 +57,7 @@ defaults:
       show_comments     : true
       show_date         : true
       show_bottomnavs   : true
+      include_on_search : true
 
 ### MISCELLANEOUS ###
 compress_html:
