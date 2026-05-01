@@ -1,34 +1,19 @@
 remote_theme: dieghernan/chulapa
 
-title: SCPF-Bot
+title: Heighxomium
 subtitle: Private Website
 
-author:
-  name                  :      SCPF-Bot
-  avatar                :      https://avatars.githubusercontent.com/u/112224835
-  location              :      SCP Foundation (Site-19)
-  links:                
-    - url: https://fb.me/june.12th.2019
-      icon: "fab fa-facebook"
-    - url: https://github.com/SCPF-Archive
-      icon: "fab fa-github"
-    - url: https://github.com/SCPF-Bot
-      icon: "fab fa-github"
-    - url: ph.server@pm.me
-      icon: "fa fa-envelope"
-
-# Navigation Bar contents.
 navbar:
   style: "classic"
   brand:
-    title: SCPF-Bot
-    img: "https://avatars.githubusercontent.com/u/112224835"
+    title: Heighxomium
+    img: "https://avatars.githubusercontent.com/u/280498728"
   nav:
   - title: Home
     url: /index
-  - title: Blog
+  - title: Posts
     child:
-     - title: Blog List
+     - title: Posts
        url: /pages/index.pages/linkvertise
 
 footer:
@@ -38,7 +23,7 @@ footer:
       url   : https://fb.me/ultimatinium
     - label : GitHub
       icon  : fab fa-github
-      url   : https://github.com/SCPF-Bot
+      url   : https://github.com/Heighxomium
     - label : Proton Mail
       icon  : fa fa-envelope
       url   : ph.server@pm.me
@@ -46,32 +31,23 @@ footer:
 
 googlefonts:
  - url: https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap
-
 chulapa-skin: 
   skin: gitdev-dark
   vars:
     font-family-base: "Ubuntu Mono"
-
-# Comments provider for the webpage.
 comments:
-  #provider: giscus #https://giscus.app
+  provider: giscus #https://giscus.app
   #provider: welcomments
   #website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
   #provider: disqus #https://disqus.com
   #disqus_shortname: scpf-archive
 
-# Collections directory path.
-# (Ex. pages/collections or yourpreferredname/yourpreferredname)
 collections_dir     : pages/_collections
 collections:
   linkvertise:
     output: true
     permalink: /linkvertise/:name
 
-# Note: Defaults for page customizations.
-# Used for layouts and design for all or specific collection pages.
-# (Ex. Edits the layout and design of all the pages of my.posts collection directory to specified strings.)
-# Please consider reading note before editing.
 defaults:
   -
     scope:
@@ -90,29 +66,25 @@ defaults:
       show_comments     : true
       show_date         : true
 
-# Miscellaneous options.
+### MISCELLANEOUS ###
 compress_html:
   clippings: all
   blanklines: true
-
 plugins:
   - jekyll-github-metadata
   - jekyll-paginate
   - jekyll-include-cache
   - jekyll-sitemap
-
 exclude:
   - LICENSE
   - Gemfile
   - vendor
   - readme
-
 markdown: kramdown
 highlighter: github
 lsi: false
 excerpt_separator: "\n\n"
 incremental: false
-
 kramdown:
   input: GFM
   hard_wrap: false
@@ -123,7 +95,6 @@ kramdown:
   toc_levels: 2..6
   smart_quotes: lsquo,rsquo,ldquo,rdquo
   enable_coderay: false
-
 sass:
   sass_dir: _sass
   style: compressed
