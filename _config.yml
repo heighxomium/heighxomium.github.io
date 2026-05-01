@@ -16,19 +16,6 @@ navbar:
      - title: Posts
        url: /pages/index.pages/linkvertise
 
-footer:
-  links:
-    - label : Facebook
-      icon  : fab fa-facebook
-      url   : https://fb.me/ultimatinium
-    - label : GitHub
-      icon  : fab fa-github
-      url   : https://github.com/Heighxomium
-    - label : Proton Mail
-      icon  : fa fa-envelope
-      url   : ph.server@pm.me
-  copyright: © 2022 by SCPF-Bot
-
 googlefonts:
  - url: https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap
 chulapa-skin: 
@@ -36,11 +23,8 @@ chulapa-skin:
   vars:
     font-family-base: "Ubuntu Mono"
 comments:
-  provider: giscus #https://giscus.app
-  #provider: welcomments
-  #website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
-  #provider: disqus #https://disqus.com
-  #disqus_shortname: scpf-archive
+  provider: giscus
+  #https://giscus.app
 
 collections_dir     : pages/_collections
 collections:
@@ -65,6 +49,7 @@ defaults:
       header_img        : assets/images/main.001.jpeg
       show_comments     : true
       show_date         : true
+      show_bottomnavs   : true
 
 ### MISCELLANEOUS ###
 compress_html:
