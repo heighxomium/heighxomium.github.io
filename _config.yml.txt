@@ -1,0 +1,238 @@
+remote_theme: dieghernan/chulapa
+
+title: SCPF-Bot
+subtitle: Private Website
+
+author:
+  name                  :      SCPF-Bot
+  avatar                :      https://avatars.githubusercontent.com/u/112224835
+  location              :      SCP Foundation (Site-19)
+  links:                
+    - url: https://fb.me/june.12th.2019
+      icon: "fab fa-facebook"
+    - url: https://github.com/SCPF-Archive
+      icon: "fab fa-github"
+    - url: https://github.com/SCPF-Bot
+      icon: "fab fa-github"
+    - url: ph.server@pm.me
+      icon: "fa fa-envelope"
+
+# Navigation Bar contents.
+navbar:
+  style: "classic"
+  brand:
+    title: SCPF-Bot
+    img: "https://avatars.githubusercontent.com/u/112224835"
+  nav:
+
+  - title: Home
+    url: /index
+
+  - title: E-Tech
+    child:
+     - title: Web Versions
+       url: /pages/index.pages/web.versions
+
+  - title: Babii
+    child:
+     - title: Diary Index
+       url: /pages/index.pages/diary.index
+     - title: To-Do List
+       url: /pages/misc/to.do.list
+     - title: Archive
+       url: /pages/archive/readme
+
+  - title: Zero to Stable
+    child:
+     - title: Introduction
+       url: /pages/zero.to.stable/page.000
+     - title: Phase 1
+       url: /pages/zero.to.stable/page.001
+     - title: Phase 2
+       url: /pages/zero.to.stable/page.002
+     - title: Phase 3
+       url: /pages/zero.to.stable/page.003
+
+  - title: Special Thanks
+    url: /pages/misc/special.thanks
+
+footer:
+  links:
+    - label : Facebook
+      icon  : fab fa-facebook
+      url   : https://fb.me/ultimatinium
+    - label : GitHub
+      icon  : fab fa-github
+      url   : https://github.com/SCPF-Bot
+    - label : Proton Mail
+      icon  : fa fa-envelope
+      url   : ph.server@pm.me
+  copyright: © 2022 by SCPF-Bot
+
+# Font URL for Google fonts.
+googlefonts:
+ - url: https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap
+
+# Theme Skins.
+chulapa-skin: 
+  skin: gitdev-dark
+  vars:
+    font-family-base: "Ubuntu Mono"
+
+# Comments provider for the webpage.
+comments:
+  #provider: giscus #https://giscus.app
+  #provider: welcomments
+  #website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
+  #provider: disqus #https://disqus.com
+  #disqus_shortname: scpf-archive
+
+#### Defaults (Do not modify.)
+# Collections path where you place your posts.
+# (Ex. pages/collections/_my.posts/post1.md)
+collections:
+  e.tech:
+    output: true
+    permalink: /e.tech/:name
+  diary.index.2019:
+    output: true
+    permalink: /diary.index.2019/:name
+  diary.index.2020:
+    output: true
+    permalink: /diary.index.2020/:name
+  diary.index.2021:
+    output: true
+    permalink: /diary.index.2021/:name
+  diary.index.2022:
+    output: true
+    permalink: /diary.index.2022/:name
+  diary.index.2023:
+    output: true
+    permalink: /diary.index.2023/:name
+  diary.index.2024:
+    output: true
+    permalink: /diary.index.2024/:name
+  diary.index.2025:
+    output: true
+    permalink: /diary.index.2025/:name
+
+# Collections directory path.
+# (Ex. pages/collections or yourpreferredname/yourpreferredname)
+collections_dir     : pages/_collections
+
+# Note: Defaults for page customizations.
+# Used for layouts and design for all or specific collection pages.
+# (Ex. Edits the layout and design of all the pages of my.posts collection directory to specified strings.)
+# Please consider reading note before editing.
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
+      include_on_search : false
+      show_comments     : true
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2019"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2020"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2021"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2022"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2023"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2024"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+  -
+    scope:
+      path: "pages/_collections/_diary.index.2025"
+    values:
+      header_type       : "hero"
+      header_img        : assets/images/main.003.jpeg
+      show_comments     : false
+      show_date         : false
+
+# Miscellaneous options.
+compress_html:
+  clippings: all
+  blanklines: true
+
+plugins:
+  - jekyll-github-metadata
+  - jekyll-paginate
+  - jekyll-include-cache
+  - jekyll-sitemap
+
+exclude:
+  - LICENSE
+  - Gemfile
+  - vendor
+
+include:
+  - readme
+
+markdown: kramdown
+highlighter: github
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  footnote_backlink: '&uarr;'
+  entity_output: as_char
+  toc_levels: 2..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+sass:
+  sass_dir: _sass
+  style: compressed
