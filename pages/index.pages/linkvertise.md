@@ -2,6 +2,6 @@
 layout: indexcategory
 title: ""
 subtitle: "index category"
-include_collection: posts
+include_collection: linkvertise
 ---
 ---
