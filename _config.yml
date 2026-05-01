@@ -4,10 +4,10 @@ title: Heighxomium
 subtitle: Private Website
 
 author:
-  name                  :      Heighxomium
-  avatar                :      https://avatars.githubusercontent.com/u/280498728
-  location              :      SCP Foundation (Site-19)
-  links:                
+  name      : Heighxomium
+  avatar    : https://avatars.githubusercontent.com/u/280498728
+  location  : SCP Foundation (Site-19)
+  links:
     - url: https://fb.me/june.12th.2019
       icon: "fab fa-facebook"
     - url: https://github.com/SCPF-Bot
@@ -21,50 +21,50 @@ navbar:
     title: Heighxomium
     img: "https://avatars.githubusercontent.com/u/280498728"
   nav:
-  - title: Home
-    url: /index
-  - title: Special Thanks
-    url: /pages/misc/special.thanks
+    - title: Home
+      url: /index
+    - title: Blog
+      url: /pages/index.pages/posts/          # 👈 blog index page
+    - title: Special Thanks
+      url: /pages/misc/special.thanks
 
-chulapa-skin: 
+chulapa-skin:
   skin: gitdev-dark
   vars:
     font-family-base: "Ubuntu Mono"
 
 comments:
-  provider: giscus #https://giscus.app
-  #provider: welcomments
-  #website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
-  #provider: disqus #https://disqus.com
-  #disqus_shortname: scpf-archive
+  provider: giscus
+  # provider: welcomments  # (commented out)
+  # website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
+  # provider: disqus
+  # disqus_shortname: scpf-archive
 
-collections_dir: pages/_collections
-collections:
-  posts:
-    output: true
-    permalink: /:collection/:name/
+# Pagination (for the blog index)
+paginate: 5
+paginate_path: /pages/index.pages/posts/page:num/
 
+# Default front matter
 defaults:
-  -
-    scope:
+  - scope:
       path: ""
     values:
       layout: "default"
-      include_on_search : false
-      show_comments     : true
-      show_date         : false
+      include_on_search: false
+      show_comments: true
+      show_date: false
 
-  -
-    scope:
-      path: "pages/collections/posts"
+  - scope:
+      path: "_posts"                          # 👈 standard Jekyll posts folder
     values:
-      header_type       : "hero"
-      header_img        : assets/images/main.001.jpeg
-      show_comments     : false
-      show_date         : false
-      show_bottomnavs   : true
+      layout: "post"                          # use theme's post layout
+      header_type: "hero"
+      header_img: /assets/images/main.001.jpeg
+      show_comments: true
+      show_date: true
+      show_bottomnavs: true
 
-# Miscellaneous options.
+# Miscellaneous
 compress_html:
   clippings: all
   blanklines: true
