@@ -64,9 +64,9 @@ comments:
 # (Ex. pages/collections or yourpreferredname/yourpreferredname)
 collections_dir     : pages/_collections
 collections:
-  e.tech:
+  posts:
     output: true
-    permalink: /blog/:name
+    permalink: /posts/:name
 
 # Note: Defaults for page customizations.
 # Used for layouts and design for all or specific collection pages.
