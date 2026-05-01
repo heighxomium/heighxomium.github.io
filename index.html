@@ -13,7 +13,7 @@ include_on_search : false
     background: rgba(33, 37, 41, 0.85);
     backdrop-filter: blur(2px);
     overflow: hidden;
-    border-radius: 1.2rem;  /* Full rounded corners for all category cards */
+    border-radius: 1.2rem;
   }
   .category-card:hover {
     transform: translateY(-8px);
@@ -40,7 +40,6 @@ include_on_search : false
     padding: 1.5rem;
     transition: all 0.2s;
   }
-  /* Simplified row styling — no nested widgets */
   .trending-row {
     display: flex;
     align-items: center;
@@ -96,13 +95,14 @@ include_on_search : false
 </style>
 
 <div class="px-3 px-md-5 py-4">
-
+  <!-- Header Section -->
   <div class="text-center mb-5 pb-2">
     <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-3"><i class="fas fa-link me-2"></i>Premium Linkvertise Library</span>
     <h1 class="display-5 fw-bold text-white glow-text">Apps · Movies · Codes · More</h1>
     <p class="lead text-white-50 mx-auto" style="max-width: 700px;">Fast access to exclusive files, software, media, and resources through secure linkvertise gates. Explore our curated collection below.</p>
   </div>
 
+  <!-- Main CTA -->
   <div class="my-4 mb-5">
     <a href="/pages/index.pages/linkvertise" style="text-decoration: none; color: inherit;">
       <div class="text-center py-5 px-3 btn-like-card border border-warning" style="background-color: #212529; color: #f8f9fa; border-radius: 1.5rem;">
@@ -114,8 +114,8 @@ include_on_search : false
     </a>
   </div>
 
-  <!-- Increased margin between category cards with g-5 (3rem gap) -->
-  <div class="row g-5 mb-5 widget-group">
+  <!-- FIXED: Category Cards (Added gy-4 for vertical spacing) -->
+  <div class="row g-5 gy-4 mb-5 widget-group">
     <div class="col-md-6 col-lg-3">
       <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-mobile-alt"></i></div>
@@ -124,7 +124,7 @@ include_on_search : false
         <div><span class="badge bg-secondary bg-opacity-50">150+ files</span> <span class="badge bg-primary bg-opacity-50 ms-2">New daily</span></div>
       </div>
     </div>
-    
+        
     <div class="col-md-6 col-lg-3">
       <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-film"></i></div>
@@ -133,7 +133,7 @@ include_on_search : false
         <div><span class="badge bg-secondary bg-opacity-50">420+ titles</span> <span class="badge bg-primary bg-opacity-50 ms-2">Trending now</span></div>
       </div>
     </div>
-    
+        
     <div class="col-md-6 col-lg-3">
       <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-code"></i></div>
@@ -142,7 +142,7 @@ include_on_search : false
         <div><span class="badge bg-secondary bg-opacity-50">230+ snippets</span> <span class="badge bg-primary bg-opacity-50 ms-2">Open source</span></div>
       </div>
     </div>
-    
+        
     <div class="col-md-6 col-lg-3">
       <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-puzzle-piece"></i></div>
@@ -153,14 +153,13 @@ include_on_search : false
     </div>
   </div>
 
-  <!-- TRENDING PICKS: Now fully inside a SINGLE widget — no nested widgets per item -->
+  <!-- FIXED: Trending Picks (Added gy-3) -->
   <div class="my-5 trending-group">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
       <h3 class="text-white fw-semibold"><i class="fas fa-fire-flame me-2 text-warning"></i> Trending picks this week</h3>
     </div>
     <div class="trending-widget">
-      <div class="row g-0">
-        <!-- Each column holds a simple row — no inner widget layers -->
+      <div class="row g-0 gy-3">
         <div class="col-md-4">
           <div class="trending-row non-clickable">
             <i class="fas fa-cube fa-2x text-warning"></i>
@@ -192,9 +191,10 @@ include_on_search : false
     </div>
   </div>
 
+  <!-- Stats & Info -->
   <div class="my-5 stats-group">
     <div class="info-merged-widget">
-      <div class="row g-0">
+      <div class="row g-0 gy-4"> <!-- Added gy-4 for mobile spacing -->
         <div class="col-md-6 p-4">
           <div class="d-flex align-items-center mb-3">
             <i class="fas fa-chart-line fa-2x text-warning me-3"></i>
@@ -226,13 +226,14 @@ include_on_search : false
     </div>
   </div>
 
-  <div class="row text-center text-white g-4 my-5 badges-group">
+  <!-- FIXED: Feature Badges (Added gy-4) -->
+  <div class="row text-center text-white g-4 gy-4 my-5 badges-group">
     <div class="col-sm-4"><div class="p-3 rounded-4 non-clickable"><i class="fas fa-database fa-2x text-warning mb-2"></i><h6 class="fw-bold">Daily Updates</h6><small class="text-white-50">Fresh file updates</small></div></div>
     <div class="col-sm-4"><div class="p-3 rounded-4 non-clickable"><i class="fas fa-headset fa-2x text-warning mb-2"></i><h6 class="fw-bold">Link Support</h6><small class="text-white-50">Re-upload guarantee, just report or comment</small></div></div>
     <div class="col-sm-4"><div class="p-3 rounded-4 non-clickable"><i class="fas fa-layer-group fa-2x text-warning mb-2"></i><h6 class="fw-bold">Multi Categories</h6><small class="text-white-50">Apps, Movies, Code, Misc</small></div></div>
   </div>
 
   <div class="text-center text-white-50 small mt-4 pt-3 border-top border-secondary">
-    <i class="fas fa-shield-heart"></i> All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep this archive alive. Non-clickable widgets are for preview only.
+    <i class="fas fa-shield-heart"></i> All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep this archive alive. Non-clickable widgets are for preview only.  
   </div>
 </div>
