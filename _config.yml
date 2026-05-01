@@ -24,7 +24,7 @@ navbar:
     - title: Home
       url: /index
     - title: Blog          # <-- ADDED
-      url: /blog/          # <-- ADDED
+      url: /pages/index.pages/blog/          # <-- ADDED
 
 chulapa-skin:
   skin: gitdev-dark
