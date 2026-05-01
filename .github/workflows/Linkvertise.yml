@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'URL Link'
+        description: 'URL of the file to download and process'
         required: true
         type: string
+
+permissions:
+  contents: write
 
 jobs:
   process:
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -32,32 +37,29 @@ jobs:
 
       - name: Clear previous outputs (idempotent)
         run: |
-          # Remove any previous files in downloads/ except the list folder
           find downloads -mindepth 1 -not -path "downloads/list*" -delete
-          > downloads/list/list.txt   # truncate existing or create empty
+          > downloads/list/list.txt
 
       - name: Download file from URL
         run: python scripts/python.001.py "${{ inputs.url }}"
 
-      - name: Run media compression script
+      - name: Compress media files
         run: python scripts/python.002.py
 
-      - name: Run archiving script
+      - name: Archive files
         run: python scripts/python.003.py
 
-      - name: Run upload script
+      - name: Upload to EasySend
         run: python scripts/python.004.py
 
-      - name: Upload share links artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: share-links
-          path: downloads/list/list.txt
-
-      - name: (Optional) Upload processed files
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: processed-files
-          path: downloads/
-          retention-days: 1
+      - name: Commit and push list.txt to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add downloads/list/list.txt
+          if git diff --cached --quiet; then
+            echo "No changes to list.txt, skipping commit"
+          else
+            git commit -m "Update share links [skip ci]"
+            git push
+          fi
