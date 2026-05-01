@@ -13,19 +13,11 @@ include_on_search : false
     background: rgba(33, 37, 41, 0.85);
     backdrop-filter: blur(2px);
     overflow: hidden;
+    border-radius: 1.2rem;  /* Full rounded corners for all category cards */
   }
   .category-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 1rem 2rem rgba(0,0,0,0.3) !important;
-  }
-  .rounded-top-only {
-    border-radius: 1.2rem 1.2rem 0 0;
-  }
-  .rounded-bottom-only {
-    border-radius: 0 0 1.2rem 1.2rem;
-  }
-  .no-rounded {
-    border-radius: 0;
   }
   .icon-circle {
     width: 70px;
@@ -122,9 +114,10 @@ include_on_search : false
     </a>
   </div>
 
-  <div class="row g-4 mb-5 widget-group">
+  <!-- Increased margin between category cards with g-5 (3rem gap) -->
+  <div class="row g-5 mb-5 widget-group">
     <div class="col-md-6 col-lg-3">
-      <div class="category-card rounded-top-only card h-100 p-4 text-white text-center shadow-lg non-clickable">
+      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-mobile-alt"></i></div>
         <h3 class="h4 fw-semibold">📱 Premium Apps</h3>
         <p class="text-white-70 small">Modded APKs, productivity tools, design software, and exclusive mobile applications. Updated weekly.</p>
@@ -132,7 +125,7 @@ include_on_search : false
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card no-rounded card h-100 p-4 text-white text-center shadow-lg non-clickable">
+      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-film"></i></div>
         <h3 class="h4 fw-semibold">🎬 Movies & Series</h3>
         <p class="text-white-70 small">HD & 4K releases, complete seasons, rare collections, subtitles packs. Cinematic experience at your fingertips.</p>
@@ -140,7 +133,7 @@ include_on_search : false
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card no-rounded card h-100 p-4 text-white text-center shadow-lg non-clickable">
+      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-code"></i></div>
         <h3 class="h4 fw-semibold">💻 Codes & Scripts</h3>
         <p class="text-white-70 small">Source codes, cheatsheets, automation scripts, web dev resources, and programming utilities.</p>
@@ -148,7 +141,7 @@ include_on_search : false
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card rounded-bottom-only card h-100 p-4 text-white text-center shadow-lg non-clickable">
+      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
         <div class="icon-circle"><i class="fas fa-puzzle-piece"></i></div>
         <h3 class="h4 fw-semibold">🎲 Miscellaneous</h3>
         <p class="text-white-70 small">E-books, wallpapers, soundtracks, design assets, fonts, and unique digital treasures.</p>
