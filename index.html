@@ -7,40 +7,12 @@ include_on_search : false
 ---
 
 <style>
-  .category-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    background: rgba(33, 37, 41, 0.85);
-    backdrop-filter: blur(2px);
-    overflow: hidden;
-    border-radius: 1.2rem;  /* Full rounded corners for all category cards */
-  }
-  .category-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 1rem 2rem rgba(0,0,0,0.3) !important;
-  }
-  .icon-circle {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(145deg, #2c3035, #212529);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem auto;
-    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-  }
-  .icon-circle i {
-    font-size: 2.2rem;
-    color: #ffc107;
-  }
   .trending-widget {
     background: #1e2126;
     border-radius: 1.2rem;
     padding: 1.5rem;
     transition: all 0.2s;
   }
-  /* Simplified row styling — no nested widgets */
   .trending-row {
     display: flex;
     align-items: center;
@@ -114,50 +86,47 @@ include_on_search : false
     </a>
   </div>
 
-  <!-- Increased margin between category cards with g-5 (3rem gap) -->
   <div class="row g-5 mb-5 widget-group">
     <div class="col-md-6 col-lg-3">
-      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
-        <div class="icon-circle"><i class="fas fa-mobile-alt"></i></div>
+      <div class="text-center text-white">
+        <i class="fas fa-mobile-alt fa-3x text-warning mb-3"></i>
         <h3 class="h4 fw-semibold">📱 Premium Apps</h3>
-        <p class="text-white-70 small">Modded APKs, productivity tools, design software, and exclusive mobile applications. Updated weekly.</p>
+        <p class="small">Modded APKs, productivity tools, design software, and exclusive mobile applications. Updated weekly.</p>
         <div><span class="badge bg-secondary bg-opacity-50">150+ files</span> <span class="badge bg-primary bg-opacity-50 ms-2">New daily</span></div>
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
-        <div class="icon-circle"><i class="fas fa-film"></i></div>
+      <div class="text-center text-white">
+        <i class="fas fa-film fa-3x text-warning mb-3"></i>
         <h3 class="h4 fw-semibold">🎬 Movies & Series</h3>
-        <p class="text-white-70 small">HD & 4K releases, complete seasons, rare collections, subtitles packs. Cinematic experience at your fingertips.</p>
+        <p class="small">HD & 4K releases, complete seasons, rare collections, subtitles packs. Cinematic experience at your fingertips.</p>
         <div><span class="badge bg-secondary bg-opacity-50">420+ titles</span> <span class="badge bg-primary bg-opacity-50 ms-2">Trending now</span></div>
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
-        <div class="icon-circle"><i class="fas fa-code"></i></div>
+      <div class="text-center text-white">
+        <i class="fas fa-code fa-3x text-warning mb-3"></i>
         <h3 class="h4 fw-semibold">💻 Codes & Scripts</h3>
-        <p class="text-white-70 small">Source codes, cheatsheets, automation scripts, web dev resources, and programming utilities.</p>
+        <p class="small">Source codes, cheatsheets, automation scripts, web dev resources, and programming utilities.</p>
         <div><span class="badge bg-secondary bg-opacity-50">230+ snippets</span> <span class="badge bg-primary bg-opacity-50 ms-2">Open source</span></div>
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="category-card card h-100 p-4 text-white text-center shadow-lg non-clickable">
-        <div class="icon-circle"><i class="fas fa-puzzle-piece"></i></div>
+      <div class="text-center text-white">
+        <i class="fas fa-puzzle-piece fa-3x text-warning mb-3"></i>
         <h3 class="h4 fw-semibold">🎲 Miscellaneous</h3>
-        <p class="text-white-70 small">E-books, wallpapers, soundtracks, design assets, fonts, and unique digital treasures.</p>
+        <p class="small">E-books, wallpapers, soundtracks, design assets, fonts, and unique digital treasures.</p>
         <div><span class="badge bg-secondary bg-opacity-50">180+ assets</span> <span class="badge bg-primary bg-opacity-50 ms-2">evergreen</span></div>
       </div>
     </div>
   </div>
 
-  <!-- TRENDING PICKS: Now fully inside a SINGLE widget — no nested widgets per item -->
   <div class="my-5 trending-group">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
       <h3 class="text-white fw-semibold"><i class="fas fa-fire-flame me-2 text-warning"></i> Trending picks this week</h3>
     </div>
     <div class="trending-widget">
       <div class="row g-0">
-        <!-- Each column holds a simple row — no inner widget layers -->
         <div class="col-md-4">
           <div class="trending-row non-clickable">
             <i class="fas fa-cube fa-2x text-warning"></i>
