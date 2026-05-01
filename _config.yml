@@ -45,9 +45,9 @@ defaults:
       path: ""
     values:
       layout: "default"
-      include_on_search : false
       show_comments     : false
       show_date         : false
+      include_on_search : true
   -
     scope:
       path: "pages/_collections/_linkvertise"
@@ -57,7 +57,6 @@ defaults:
       show_comments     : true
       show_date         : true
       show_bottomnavs   : true
-      include_on_search : true
 
 ### MISCELLANEOUS ###
 compress_html:
