@@ -24,7 +24,7 @@ navbar:
     - title: Home
       url: /index
     - title: Blog
-      url: /pages/index.pages/posts/          # 👈 blog index page
+      url: /blog/ # 👈 corrected path for the blog index
     - title: Special Thanks
       url: /pages/misc/special.thanks
 
@@ -35,14 +35,16 @@ chulapa-skin:
 
 comments:
   provider: giscus
-  # provider: welcomments  # (commented out)
-  # website_id: "JmOHDoyWDZURoAoxETF4oNUl2"
-  # provider: disqus
-  # disqus_shortname: scpf-archive
 
 # Pagination (for the blog index)
 paginate: 5
-paginate_path: /pages/index.pages/posts/page:num/
+paginate_path: /blog/page:num/
+
+# 👇 ADD THIS: Explicitly define the posts collection
+collections:
+  posts:
+    output: true
+    permalink: /blog/:title/ # 👈 sets a clean URL for each post
 
 # Default front matter
 defaults:
@@ -55,9 +57,9 @@ defaults:
       show_date: false
 
   - scope:
-      path: "_posts"                          # 👈 standard Jekyll posts folder
+      path: "_posts" # 👈 applies to all posts in this folder
     values:
-      layout: "post"                          # use theme's post layout
+      layout: "post"
       header_type: "hero"
       header_img: /assets/images/main.001.jpeg
       show_comments: true
