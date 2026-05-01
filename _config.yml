@@ -4,7 +4,7 @@ title: Heighxomium
 subtitle: Private Website
 
 search:
-  provider: lunr
+  provider: fusejs
   label: "Search"
   landing_page: /pages/internal/search
   show_attrib: true
