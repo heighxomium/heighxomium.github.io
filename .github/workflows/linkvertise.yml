@@ -1,0 +1,63 @@
+name: Process and Upload Media
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL Link'
+        required: true
+        type: string
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies (ffmpeg)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install py7zr pillow requests
+
+      - name: Create downloads folder and list directory
+        run: mkdir -p downloads/list
+
+      - name: Clear previous outputs (idempotent)
+        run: |
+          # Remove any previous files in downloads/ except the list folder
+          find downloads -mindepth 1 -not -path "downloads/list*" -delete
+          > downloads/list/list.txt   # truncate existing or create empty
+
+      - name: Download file from URL
+        run: python scripts/python.001.py "${{ inputs.url }}"
+
+      - name: Run media compression script
+        run: python scripts/python.002.py
+
+      - name: Run archiving script
+        run: python scripts/python.003.py
+
+      - name: Run upload script
+        run: python scripts/python.004.py
+
+      - name: Upload share links artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: share-links
+          path: downloads/list/list.txt
+
+      - name: (Optional) Upload processed files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-files
+          path: downloads/
+          retention-days: 1
