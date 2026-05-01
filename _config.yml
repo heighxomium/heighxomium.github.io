@@ -23,6 +23,8 @@ navbar:
   nav:
     - title: Home
       url: /index
+    - title: Blog          # <-- ADDED
+      url: /blog/          # <-- ADDED
 
 chulapa-skin:
   skin: gitdev-dark
@@ -40,6 +42,10 @@ defaults:
       include_on_search: false
       show_comments: true
       show_date: false
+
+# Pagination settings (ADDED)
+paginate: 5
+paginate_path: "/blog/page:num/"
 
 # Miscellaneous
 compress_html:
