@@ -1,8 +1,6 @@
 remote_theme: dieghernan/chulapa
-
 title: Heighxomium
 subtitle: Private Website
-
 author:
   name      : Heighxomium
   avatar    : https://avatars.githubusercontent.com/u/280498728
@@ -25,14 +23,17 @@ navbar:
       url: /index
     - title: Blog          # <-- ADDED
       url: /pages/index.pages/blog/          # <-- ADDED
+  
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year:month:day_:title
 
-chulapa-skin:
-  skin: gitdev-dark
-  vars:
-    font-family-base: "Ubuntu Mono"
-
-comments:
-  provider: giscus
+collections_dir: collections
+permalink: /:year:month:day_:title
+paginate: 4
+paginate_path: "/blog/page:num/"
+paginator_maxnum: 3
 
 defaults:
   - scope:
@@ -48,6 +49,14 @@ paginate: 5
 paginate_path: "/blog/page:num/"
 
 # Miscellaneous
+comments:
+  provider: giscus
+
+chulapa-skin:
+  skin: gitdev-dark
+  vars:
+    font-family-base: "Ubuntu Mono"
+
 compress_html:
   clippings: all
   blanklines: true
