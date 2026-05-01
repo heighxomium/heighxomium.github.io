@@ -29,7 +29,7 @@ navbar:
   - title: Blog
     child:
      - title: Blog List
-       url: /pages/index.pages/blog
+       url: /pages/index.pages/linkvertise
 
 footer:
   links:
@@ -64,9 +64,9 @@ comments:
 # (Ex. pages/collections or yourpreferredname/yourpreferredname)
 collections_dir     : pages/_collections
 collections:
-  posts:
+  linkvertise:
     output: true
-    permalink: /posts/:name
+    permalink: /linkvertise/:name
 
 # Note: Defaults for page customizations.
 # Used for layouts and design for all or specific collection pages.
@@ -83,7 +83,7 @@ defaults:
       show_date         : false
   -
     scope:
-      path: "pages/_collections/_posts"
+      path: "pages/_collections/_linkvertise"
     values:
       header_type       : "hero"
       header_img        : assets/images/main.001.jpeg
