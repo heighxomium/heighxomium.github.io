@@ -27,7 +27,6 @@ chulapa-skin:
     font-family-base: "Ubuntu Mono"
 comments:
   provider: giscus
-  #https://giscus.app
 
 collections_dir     : pages/_collections
 collections:
