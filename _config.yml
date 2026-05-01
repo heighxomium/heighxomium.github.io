@@ -3,6 +3,9 @@ remote_theme: dieghernan/chulapa
 title: Heighxomium
 subtitle: Private Website
 
+search:
+  provider: lunr
+  
 navbar:
   style: "classic"
   brand:
