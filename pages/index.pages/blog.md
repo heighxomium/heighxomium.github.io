@@ -1,8 +1,7 @@
 ---
-layout: blog
-title: Blog
-permalink: /blog/
-pagination:
-  enabled: true
+layout: indexcategory
+title: ""
+subtitle: "index category"
+include_collection: posts
 ---
 ---
