@@ -5,7 +5,11 @@ subtitle: Private Website
 
 search:
   provider: lunr
-  
+  label: "Search"
+  landing_page: "/search/"
+  show_attrib: true
+  maxwords: 30
+
 navbar:
   style: "classic"
   brand:
