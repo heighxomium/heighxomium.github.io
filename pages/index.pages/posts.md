@@ -1,7 +1,6 @@
 ---
 layout: blog
+paginate: true
 title: Blog
-permalink: /pages/index.pages/posts/
-pagination:
-  enabled: true
+---
 ---
