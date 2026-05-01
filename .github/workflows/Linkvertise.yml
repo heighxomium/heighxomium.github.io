@@ -1,4 +1,4 @@
-name: Process and Upload Media
+name: Linkvertise
 
 on:
   workflow_dispatch:
