@@ -22,7 +22,7 @@ navbar:
     - title: Home
       url: /index
     - title: Blog          # <-- ADDED
-      url: /pages/index.pages/blog/          # <-- ADDED
+      url: /blog/          # <-- ADDED
   
 collections:
   posts:
