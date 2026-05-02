@@ -3,16 +3,20 @@ layout: default
 ---
 {{ content }}
 
-<div id="posts-container">
-  <div class="text-center py-5">
+<div id="posts-container" class="row">
+  <!-- Loading spinner -->
+  <div class="col-12 text-center py-5">
     <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading…</span>
+      <span class="sr-only">Loading…</span>
     </div>
   </div>
 </div>
 
 <div id="loadmore-container" class="text-center mt-4 mb-5">
-  <button id="loadmore-btn" class="btn btn-primary">Load more posts</button>
+  <button id="loadmore-btn" class="btn btn-primary btn-lg px-5 py-2">
+    <i class="fas fa-arrow-down mr-2"></i> Load more posts
+    <i class="fas fa-spinner fa-pulse d-none ml-2" id="loadmore-spinner"></i>
+  </button>
 </div>
 
 <script>
@@ -43,49 +47,59 @@ layout: default
     {% endfor %}
   ];
 
-  // Initialize with data from Jekyll
   allPosts = allPostsData;
   
   // Remove spinner and load first batch
-  document.getElementById('posts-container').innerHTML = '';
+  const container = document.getElementById('posts-container');
+  container.innerHTML = '';
   loadMorePosts();
 
   function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
+    
+    // Show spinner inside button
+    const btnSpinner = document.getElementById('loadmore-spinner');
+    const btn = document.getElementById('loadmore-btn');
+    btnSpinner.classList.remove('d-none');
+    btn.disabled = true;
 
     const start = (currentPage - 1) * POSTS_PER_PAGE;
     const end = start + POSTS_PER_PAGE;
     const postsToLoad = allPosts.slice(start, end);
 
     if (postsToLoad.length === 0) {
-      const btn = document.getElementById('loadmore-btn');
+      btn.innerHTML = '<i class="fas fa-check mr-2"></i> All posts loaded';
       btn.disabled = true;
-      btn.innerText = "All posts loaded";
+      btnSpinner.classList.add('d-none');
       isLoading = false;
       return;
     }
 
-    const container = document.getElementById('posts-container');
-    
-    postsToLoad.forEach(post => {
-      const article = document.createElement('article');
-      article.className = 'mb-4';
-      article.innerHTML = `
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">${escapeHtml(post.title)}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(post.date)}</h6>
-            <p class="card-text">${escapeHtml(post.excerpt)}</p>
-            <a href="${escapeHtml(post.url)}" class="card-link">Continue reading →</a>
+    // Simulate a tiny delay for smoother UX (optional)
+    setTimeout(() => {
+      postsToLoad.forEach(post => {
+        // This HTML structure matches Chulapa's components/indexcards.html exactly
+        const col = document.createElement('div');
+        col.className = 'col-lg-4 col-md-6 mb-4';
+        col.innerHTML = `
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">${escapeHtml(post.title)}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(post.date)}</h6>
+              <p class="card-text">${escapeHtml(post.excerpt)}</p>
+              <a href="${escapeHtml(post.url)}" class="card-link">Continue reading <i class="fas fa-arrow-right ml-1"></i></a>
+            </div>
           </div>
-        </div>
-      `;
-      container.appendChild(article);
-    });
+        `;
+        container.appendChild(col);
+      });
 
-    currentPage++;
-    isLoading = false;
+      currentPage++;
+      isLoading = false;
+      btnSpinner.classList.add('d-none');
+      btn.disabled = false;
+    }, 300);
   }
 
   function escapeHtml(str) {
@@ -98,5 +112,29 @@ layout: default
     });
   }
 
+  // Attach event listener after DOM is ready
   document.getElementById('loadmore-btn').addEventListener('click', loadMorePosts);
 </script>
+
+<style>
+  /* Ensure cards have equal height and smooth transitions */
+  #posts-container .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  #posts-container .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  #loadmore-btn {
+    transition: all 0.3s ease;
+  }
+  #loadmore-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  #loadmore-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+</style>
