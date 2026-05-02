@@ -19,7 +19,7 @@ layout: default
 </div>
 
 <template id="card-template">
-  <div class="col-12 mb-2">
+  <div class="col-lg-4 col-md-6 col-12 mb-2">
     <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden">
       <div class="row g-0">
         <div class="col-sm-1 chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient image-col"
@@ -43,12 +43,23 @@ layout: default
 </template>
 
 <script>
-  const POSTS_PER_PAGE = {{ page.posts_per_page | default: 10 }};
+  // ----- Helper: get posts per page based on screen width -----
+  function getPostsPerPage() {
+    // Desktop: width >= 992px (Bootstrap's lg breakpoint)
+    if (window.innerWidth >= 992) {
+      return 15;
+    } else {
+      // Mobile / tablet: 10 posts
+      return 10;
+    }
+  }
+
   let currentPage = 1;
+  let currentPostsPerPage = getPostsPerPage();
   let allPosts = [];
   let isLoading = false;
 
-  // ----- EMBEDDED POSTS DATA (with absolute image URLs) -----
+  // ----- EMBEDDED POSTS DATA (absolute image URLs) -----
   const allPostsData = [
     {% assign collection = site[page.include_collection] %}
     {% if page.category_name %}
@@ -91,11 +102,13 @@ layout: default
   allPosts = allPostsData;
   const totalPosts = allPosts.length;
 
+  // DOM elements
   const container = document.getElementById('posts-container');
   const loadmoreContainer = document.getElementById('loadmore-container');
   const loadmoreBtn = document.getElementById('loadmore-btn');
   const btnSpinner = document.getElementById('loadmore-spinner');
 
+  // Helper: escape HTML
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -106,6 +119,7 @@ layout: default
     });
   }
 
+  // Render a single post using the template
   function renderPost(post) {
     const template = document.getElementById('card-template');
     const clone = template.content.cloneNode(true);
@@ -166,6 +180,7 @@ layout: default
     return clone;
   }
 
+  // Load more posts (respects current posts per page)
   function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
@@ -175,8 +190,8 @@ layout: default
       loadmoreBtn.disabled = true;
     }
     
-    const start = (currentPage - 1) * POSTS_PER_PAGE;
-    const end = start + POSTS_PER_PAGE;
+    const start = (currentPage - 1) * currentPostsPerPage;
+    const end = start + currentPostsPerPage;
     const postsToLoad = allPosts.slice(start, end);
     
     if (postsToLoad.length === 0) {
@@ -195,12 +210,14 @@ layout: default
       if (btnSpinner) btnSpinner.classList.add('d-none');
       if (loadmoreBtn) loadmoreBtn.disabled = false;
       
-      if (currentPage > Math.ceil(totalPosts / POSTS_PER_PAGE)) {
+      // Check if all posts are loaded
+      if (currentPage * currentPostsPerPage >= totalPosts) {
         replaceWithBackToTop();
       }
     }, 200);
   }
 
+  // Replace Load More button with Back to Top
   function replaceWithBackToTop() {
     if (!loadmoreContainer) return;
     loadmoreContainer.innerHTML = `
@@ -216,19 +233,34 @@ layout: default
     }
   }
 
+  // Initialise the page
   function init() {
+    // Clear spinner
     container.innerHTML = '';
-    if (totalPosts <= POSTS_PER_PAGE) {
+    
+    // Determine posts per page based on current screen width
+    currentPostsPerPage = getPostsPerPage();
+    currentPage = 1;
+    
+    // Show/hide load more button
+    if (totalPosts <= currentPostsPerPage) {
       loadmoreContainer.style.display = 'none';
     } else {
       loadmoreContainer.style.display = 'block';
     }
+    
+    // Load first batch
     loadMorePosts();
+    
+    // Attach event listener to button (if not already)
     if (loadmoreBtn) {
       loadmoreBtn.addEventListener('click', loadMorePosts);
     }
   }
   
+  // Run init on load and also on window resize (optional, but resets view)
+  // Resetting on resize could be confusing; we'll just re-init if size crosses threshold?
+  // Simpler: do nothing on resize. The page works with whichever size it loaded.
   document.addEventListener('DOMContentLoaded', init);
 </script>
 
@@ -250,4 +282,4 @@ layout: default
   @media (min-width: 576px) {
     .chulapa-min-h-10 { min-height: 80px; }
   }
-  </style>
+</style>
