@@ -7,46 +7,25 @@ include_on_search : false
 ---
 
 <style>
-/* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS + BS5 ENHANCEMENTS
-═══════════════════════════════════════════════════════════ */
+/* DESIGN TOKENS + FIXES */
 :root {
   --gold:        #ffc107;
   --gold-dim:    rgba(255,193,7,0.18);
   --gold-glow:   rgba(255,193,7,0.35);
-  --surface-1:   rgba(33,37,41,0.92);
-  --surface-2:   rgba(22,25,28,0.85);
-  --border-sub:  rgba(255,255,255,0.1);
+  --surface-1:   rgba(33,37,41,0.94);
+  --surface-2:   rgba(22,25,28,0.88);
+  --border-sub:  rgba(255,255,255,0.12);
   --txt-muted:   rgba(255,255,255,0.55);
   --txt-soft:    rgba(255,255,255,0.78);
   --radius-lg:   1.25rem;
   --radius-xl:   1.75rem;
-  --bs-border-color: var(--border-sub);
 }
 
-/* Keyframes */
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(22px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes pulseBorder {
-  0%,100% { box-shadow: 0 0 0 0 var(--gold-glow), inset 0 0 0 1px var(--gold); }
-  50%     { box-shadow: 0 0 28px 6px var(--gold-dim), inset 0 0 0 1px var(--gold); }
-}
-@keyframes badgePulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,193,7,0.4); }
-  60%     { box-shadow: 0 0 0 7px rgba(255,193,7,0); }
-}
-@keyframes shimmer {
-  from { background-position: -200% center; }
-  to   { background-position: 200% center; }
-}
-
-/* Reveal animations */
+/* Core Animations */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.25,0.1,0.25,1), transform 0.6s cubic-bezier(0.25,0.1,0.25,1);
+  transform: translateY(30px);
+  transition: all 0.7s cubic-bezier(0.25,0.1,0.25,1);
 }
 .reveal.visible {
   opacity: 1;
@@ -54,158 +33,89 @@ include_on_search : false
 }
 .reveal-stagger > * {
   opacity: 0;
-  transform: translateY(18px);
-  transition: all 0.55s cubic-bezier(0.25,0.1,0.25,1);
+  transform: translateY(25px);
+  transition: all 0.6s cubic-bezier(0.25,0.1,0.25,1);
 }
-.reveal-stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0.05s; }
-.reveal-stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:0.15s; }
-.reveal-stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:0.25s; }
-.reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:0.35s; }
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.05s; }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.15s; }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.25s; }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.35s; }
 
 /* Background */
 .page-outer {
   position: relative;
-  overflow-x: hidden;
 }
 .page-outer::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(255,193,7,0.085) 1px, transparent 1px);
-  background-size: 30px 30px;
+  background-image: radial-gradient(circle, rgba(255,193,7,0.09) 1px, transparent 1px);
+  background-size: 32px 32px;
   pointer-events: none;
   z-index: 0;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
 }
 .page-outer > * { position: relative; z-index: 1; }
 
-/* Hero */
-.hero-badge {
-  display: inline-flex;
+/* Section Labels */
+.section-label {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--gold-dim);
-  border: 1px solid var(--gold-glow);
-  color: var(--gold);
+  gap: 1rem;
+  margin: 3rem 0 1.75rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--txt-muted);
   font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-  padding: 0.5rem 1.25rem;
-  border-radius: 50px;
-  animation: badgePulse 2.8s ease infinite;
 }
-.hero-title {
-  font-size: clamp(2rem, 5.5vw, 3.2rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  background: linear-gradient(135deg, #fff 35%, var(--gold) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.hero-lead {
-  color: var(--txt-soft);
-  font-size: clamp(1rem, 2.8vw, 1.15rem);
-  max-width: 680px;
-}
-
-/* CTA */
-.cta-card-wrap a { text-decoration: none; color: inherit; }
-.cta-card {
-  background: var(--surface-1);
-  border: 1px solid var(--gold);
-  border-radius: var(--radius-xl);
-  padding: 3.25rem 2.25rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-.cta-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(255,193,7,0.15);
-}
-.cta-card::after {
+.section-label::before,
+.section-label::after {
   content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(255,193,7,0.1) 50%, transparent 70%);
-  background-size: 200% 100%;
-  opacity: 0;
-  transition: opacity 0.4s;
+  flex: 1;
+  height: 1px;
+  background: var(--border-sub);
 }
-.cta-card:hover::after { opacity:1; animation: shimmer 1.6s linear infinite; }
 
-.cta-icon {
-  font-size: 4rem;
-  color: var(--gold);
-  filter: drop-shadow(0 0 20px var(--gold-glow));
-  margin-bottom: 1rem;
-  transition: transform 0.4s ease;
-}
-.cta-card:hover .cta-icon { transform: scale(1.15) rotate(-8deg); }
-.cta-arrow-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--gold);
-  color: #212529;
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.6rem 1.6rem;
-  border-radius: 50px;
-  transition: all 0.3s ease;
-}
-.cta-card:hover .cta-arrow-badge { gap: 0.85rem; box-shadow: 0 4px 15px var(--gold-glow); }
-
-/* Category Cards */
+/* Category Cards - Fixed Spacing */
 .cat-card {
   background: var(--surface-1);
   border-radius: var(--radius-lg);
-  padding: 2rem 1.5rem;
+  padding: 2.25rem 1.5rem;
   text-align: center;
   border: 1px solid var(--border-sub);
   border-top: 4px solid var(--cat-accent, #6c757d);
-  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: all 0.4s ease;
 }
 .cat-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-  border-color: var(--cat-accent);
+  transform: translateY(-12px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
-.cat-card[data-cat="apps"]  { --cat-accent: #4dabf7; }
-.cat-card[data-cat="movies"]{ --cat-accent: #f783ac; }
-.cat-card[data-cat="codes"] { --cat-accent: #69db7c; }
-.cat-card[data-cat="misc"]  { --cat-accent: #da77f2; }
-
 .cat-icon-ring {
-  width: 76px; height: 76px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
   background: rgba(255,255,255,0.05);
   border: 3px solid var(--cat-accent);
-  box-shadow: 0 0 20px -2px var(--cat-accent);
-  transition: all 0.3s ease;
 }
-.cat-card:hover .cat-icon-ring {
-  box-shadow: 0 0 30px 4px var(--cat-accent);
-  transform: scale(1.08);
-}
-.cat-icon-ring i { font-size: 2.1rem; color: var(--cat-accent); }
-.cat-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
-.cat-card p  { font-size: 0.9rem; color: var(--txt-soft); flex: 1; }
+
+/* CTA & Hero */
+.hero-badge { animation: badgePulse 2.8s ease infinite; }
+.cta-card { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 </style>
 
-<div class="container-fluid px-3 px-md-4 px-lg-5 py-5 page-outer" style="max-width: 1280px; margin: 0 auto;">
+<div class="container-fluid px-4 px-lg-5 py-5 page-outer" style="max-width: 1320px; margin: 0 auto;">
 
   <!-- Hero -->
-  <div class="text-center mb-5 reveal" style="margin-bottom: 4rem !important;">
+  <div class="text-center mb-5 reveal" style="margin-bottom: 4.5rem !important;">
     <div class="hero-badge mb-3">
       <i class="fas fa-link"></i> Premium Linkvertise Library
     </div>
@@ -216,9 +126,9 @@ include_on_search : false
   </div>
 
   <!-- CTA Card -->
-  <div class="cta-card-wrap mb-5 reveal" style="margin-bottom: 4rem !important;">
-    <a href="/pages/index.pages/linkvertise" aria-label="View all Linkvertise posts">
-      <div class="cta-card mx-auto" style="max-width: 520px;">
+  <div class="cta-card-wrap mb-5 reveal" style="margin-bottom: 5rem !important;">
+    <a href="/pages/index.pages/linkvertise">
+      <div class="cta-card mx-auto" style="max-width: 540px;">
         <i class="fas fa-leaf cta-icon"></i>
         <h2 class="mb-3">View All Posts</h2>
         <p class="cta-sub px-md-5 mb-4">Browse the complete library — Apps, Movies, Codes, Misc &amp; more</p>
@@ -229,55 +139,51 @@ include_on_search : false
     </a>
   </div>
 
-  <!-- Categories -->
+  <!-- Browse by Category - FIXED -->
   <div class="section-label reveal"><span>Browse by category</span></div>
-  <div class="row g-4 g-lg-5 mb-5 reveal-stagger">
+  <div class="row g-4 g-xl-5 mb-5 reveal-stagger" style="margin-bottom: 5.5rem !important;">
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="apps">
         <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
-        <div>
-          <h3>📱 Premium Apps</h3>
-          <p>Modded APKs, productivity tools, design software, and exclusive applications.</p>
-          <span class="cat-badge badge bg-transparent border border-1 mt-2" style="color:var(--cat-accent); font-size:0.75rem;">New daily</span>
-        </div>
+        <h3>📱 Premium Apps</h3>
+        <p>Modded APKs, productivity tools, design software, and exclusive applications.</p>
+        <span class="cat-badge badge border mt-3">New daily</span>
       </div>
     </div>
+
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="movies">
         <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
-        <div>
-          <h3>🎬 Movies &amp; Series</h3>
-          <p>HD releases, complete seasons, collections and subtitles.</p>
-          <span class="cat-badge badge bg-transparent border border-1 mt-2" style="color:var(--cat-accent); font-size:0.75rem;">Trending now</span>
-        </div>
+        <h3>🎬 Movies &amp; Series</h3>
+        <p>HD releases, complete seasons, collections and subtitles.</p>
+        <span class="cat-badge badge border mt-3">Trending now</span>
       </div>
     </div>
+
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="codes">
         <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
-        <div>
-          <h3>💻 Codes &amp; Scripts</h3>
-          <p>Source codes, programming utilities, automation scripts.</p>
-          <span class="cat-badge badge bg-transparent border border-1 mt-2" style="color:var(--cat-accent); font-size:0.75rem;">Open source</span>
-        </div>
+        <h3>💻 Codes &amp; Scripts</h3>
+        <p>Source codes, programming utilities, automation scripts.</p>
+        <span class="cat-badge badge border mt-3">Open source</span>
       </div>
     </div>
+
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="misc">
         <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
-        <div>
-          <h3>🎲 Miscellaneous</h3>
-          <p>E-books, wallpapers, soundtracks, design assets, fonts, etc.</p>
-          <span class="cat-badge badge bg-transparent border border-1 mt-2" style="color:var(--cat-accent); font-size:0.75rem;">Evergreen</span>
-        </div>
+        <h3>🎲 Miscellaneous</h3>
+        <p>E-books, wallpapers, soundtracks, design assets, fonts, etc.</p>
+        <span class="cat-badge badge border mt-3">Evergreen</span>
       </div>
     </div>
   </div>
-
-  <!-- Stats + How it works -->
+  
+  <!-- Platform Overview -->
   <div class="section-label reveal"><span>Platform overview</span></div>
-  <div class="info-panel mb-5 reveal p-4 p-lg-5">
+  <div class="info-panel mb-5 reveal p-4 p-lg-5" style="margin-bottom: 5.5rem !important;">
     <div class="row g-0 flex-column flex-lg-row align-items-stretch">
+      <!-- Stats -->
       <div class="col-12 col-lg-6 p-4">
         <h5 class="text-uppercase fw-semibold mb-4" style="font-size:0.85rem;letter-spacing:0.1em;opacity:0.7;">Platform Stats</h5>
         <div class="row text-center g-0">
@@ -303,6 +209,7 @@ include_on_search : false
       <div class="col-lg-auto d-none d-lg-block border-end" style="border-color:var(--border-sub); width:1px;"></div>
       <div class="d-lg-none my-3"><hr style="border-color:var(--border-sub);"></div>
 
+      <!-- How it works -->
       <div class="col-12 col-lg-6 p-4">
         <h5 class="text-uppercase fw-semibold mb-4" style="font-size:0.85rem;letter-spacing:0.1em;opacity:0.7;">How Linkvertise works</h5>
         <p class="mb-4" style="color:var(--txt-soft);line-height:1.7;">
@@ -317,9 +224,9 @@ include_on_search : false
     </div>
   </div>
 
-  <!-- Features -->
+  <!-- Why use this -->
   <div class="section-label reveal"><span>Why use this</span></div>
-  <div class="row g-4 mb-5 reveal-stagger">
+  <div class="row g-4 mb-5 reveal-stagger" style="margin-bottom: 5rem !important;">
     <div class="col-12 col-md-4">
       <div class="feature-tile">
         <i class="fas fa-database"></i>
@@ -344,14 +251,14 @@ include_on_search : false
   </div>
 
   <!-- Back to Top -->
-  <div class="text-center mb-5">
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btt-btn btn" aria-label="Scroll to top">
+  <div class="text-center my-5 py-4">
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btt-btn btn btn-lg px-5">
       Back to Top
     </button>
   </div>
 
   <!-- Footer -->
-  <div class="footer-note">
+  <div class="footer-note text-center">
     <i class="fas fa-shield-heart me-2"></i>
     All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep me motivated…
   </div>
