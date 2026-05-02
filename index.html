@@ -149,7 +149,6 @@ include_on_search : false
 }
 .cta-card:hover { transform: translateY(-4px); }
 
-/* shimmer sweep on hover */
 .cta-card::after {
   content: '';
   position: absolute;
@@ -188,7 +187,7 @@ include_on_search : false
 .cta-card:hover .cta-arrow-badge { gap: .7rem; }
 
 /* ═══════════════════════════════════════════════════════════
-   CATEGORY CARDS
+   CATEGORY CARDS FIX[cite: 1]
 ═══════════════════════════════════════════════════════════ */
 .cat-card {
   background: var(--surface-1);
@@ -242,7 +241,7 @@ include_on_search : false
 }
 
 /* ═══════════════════════════════════════════════════════════
-   STATS / HOW-IT-WORKS PANEL
+   STATS / HOW-IT-WORKS PANEL FIX[cite: 1]
 ═══════════════════════════════════════════════════════════ */
 .info-panel {
   background: var(--surface-2);
@@ -385,7 +384,7 @@ include_on_search : false
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MOBILE
+   MOBILE ADJUSTMENTS[cite: 1]
 ═══════════════════════════════════════════════════════════ */
 @media (max-width: 575.98px) {
   .page-outer { padding-left: 1rem !important; padding-right: 1rem !important; }
@@ -397,9 +396,6 @@ include_on_search : false
   .cat-icon-ring i { font-size: 1.5rem; }
   .cat-card p { margin-bottom: .4rem; }
   .btt-btn    { width: 100%; text-align: center; }
-}
-@media (min-width: 576px) and (max-width: 991.98px) {
-  .cat-card { padding: 1.25rem 1rem; }
 }
 </style>
 
@@ -435,10 +431,10 @@ include_on_search : false
   <!-- ── Section label ─────────────────────────────────────── -->
   <div class="section-label reveal" style="margin-bottom: 1.5rem; margin-top: 2rem;"><span>Browse by category</span></div>
 
-  <!-- ── Category cards ────────────────────────────────────── -->
+  <!-- ── Category cards FIX[cite: 1] ────────────────────────── -->
   <div class="row g-3 g-md-4 mb-5 reveal-stagger" style="margin-bottom: 3rem !important;">
 
-    <div class="col-12 col-sm-6 col-lg-3" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="apps">
         <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
         <div>
@@ -449,7 +445,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="movies">
         <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
         <div>
@@ -460,7 +456,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="codes">
         <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
         <div>
@@ -471,7 +467,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-6 col-lg-3">
       <div class="cat-card" data-cat="misc">
         <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
         <div>
@@ -484,13 +480,13 @@ include_on_search : false
 
   </div>
 
-  <!-- ── Stats + How it works ──────────────────────────────── -->
+  <!-- ── Stats + How it works FIX[cite: 1] ────────────────── -->
   <div class="section-label reveal" style="margin-bottom: 1.5rem;"><span>Platform overview</span></div>
   <div class="info-panel mb-5 reveal" style="margin-bottom: 3rem !important;">
-    <div class="row g-0 flex-column flex-md-row">
+    <div class="row g-0 flex-column flex-lg-row">
 
       <!-- Stats -->
-      <div class="col-12 col-md-6 p-4 pb-3" style="padding: 1.5rem !important;">
+      <div class="col-12 col-lg-6 p-4 pb-3" style="padding: 1.5rem !important;">
         <h5 class="text-white fw-bold mb-3" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6; margin-bottom: 1rem;">
           Platform Stats
         </h5>
@@ -515,15 +511,15 @@ include_on_search : false
       </div>
 
       <!-- Mobile hr -->
-      <div class="d-md-none mx-4"><hr style="border-color:var(--border-sub); margin: 0 1.5rem;"></div>
+      <div class="d-lg-none mx-4"><hr style="border-color:var(--border-sub); margin: 0 1.5rem;"></div>
 
       <!-- Vertical divider desktop -->
-      <div class="col-auto d-none d-md-flex px-0 align-items-stretch">
+      <div class="col-auto d-none d-lg-flex px-0 align-items-stretch">
         <div class="info-divider-v"></div>
       </div>
 
       <!-- How it works -->
-      <div class="col-12 col-md-6 p-4" style="padding: 1.5rem !important;">
+      <div class="col-12 col-lg-6 p-4" style="padding: 1.5rem !important;">
         <h5 class="text-white fw-bold mb-3" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6; margin-bottom: 1rem;">
           How Linkvertise works
         </h5>
@@ -544,21 +540,21 @@ include_on_search : false
   <!-- ── Feature tiles ─────────────────────────────────────── -->
   <div class="section-label reveal" style="margin-bottom: 1.5rem;"><span>Why use this</span></div>
   <div class="row g-3 g-md-4 mb-5 reveal-stagger" style="margin-bottom: 3rem !important;">
-    <div class="col-12 col-sm-4" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-4">
       <div class="feature-tile">
         <i class="fas fa-database"></i>
         <h6>Daily Updates</h6>
         <small>Fresh file uploads every single day</small>
       </div>
     </div>
-    <div class="col-12 col-sm-4" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-4">
       <div class="feature-tile">
         <i class="fas fa-headset"></i>
         <h6>Link Support</h6>
         <small>Re-upload guarantee — just report or comment</small>
       </div>
     </div>
-    <div class="col-12 col-sm-4" style="margin-bottom: 1rem;">
+    <div class="col-12 col-sm-4">
       <div class="feature-tile">
         <i class="fas fa-layer-group"></i>
         <h6>Multi-Category</h6>
