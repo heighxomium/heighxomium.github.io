@@ -28,7 +28,7 @@ layout: default
   let allPosts = [];
   let isLoading = false;
 
-  // Build posts data (exactly as Jekyll would for indexcards.html)
+  // Build posts data
   const allPostsData = [
     {% assign collection = site[page.include_collection] %}
     {% if page.category_name %}
@@ -49,16 +49,14 @@ layout: default
         "og_image": {{ post.og_image | default: post.header_img | jsonify }},
         "categories": [
           {% for cat in post.categories %}
-            "{{ cat | slugify | prepend: '#' | prepend: post.cloudcategory_url | absolute_url | uri_escape }}",
+            { "name": {{ cat | jsonify }}, "url": {{ cat | replace: " ", "-" | prepend: "#" | prepend: post.cloudcategory_url | absolute_url | uri_escape | jsonify }} }{% unless forloop.last %},{% endunless %}
           {% endfor %}
         ],
-        "category_names": [{% for cat in post.categories %}"{{ cat }}"{% unless forloop.last %},{% endunless %}{% endfor %}],
         "tags": [
           {% for tag in post.tags %}
-            "{{ tag | slugify | prepend: '#' | prepend: post.cloudtag_url | absolute_url | uri_escape }}",
+            { "name": {{ tag | jsonify }}, "url": {{ tag | replace: " ", "-" | prepend: "#" | prepend: post.cloudtag_url | absolute_url | uri_escape | jsonify }} }{% unless forloop.last %},{% endunless %}
           {% endfor %}
-        ],
-        "tag_names": [{% for tag in post.tags %}"{{ tag }}"{% unless forloop.last %},{% endunless %}{% endfor %}]
+        ]
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
@@ -98,7 +96,7 @@ layout: default
 
     setTimeout(() => {
       postsToLoad.forEach(post => {
-        // Build the exact HTML from indexcards.html
+        // Build image block (same as indexcards.html)
         let imageBlock = '';
         if (post.og_image) {
           imageBlock = `
@@ -107,44 +105,40 @@ layout: default
             </a>
           `;
         } else {
-          // No image: class "d-none d-sm-flex" is removed? In original, they add "d-none d-sm-flex" if no image.
-          // We'll keep the column but without background, and hide on small? Better to replicate: 
-          // The original adds class "d-none d-sm-flex" when no image. We'll do the same.
-          imageBlock = `
-            <div class="col-sm-1 d-none d-sm-flex"></div>
-          `;
+          imageBlock = `<div class="col-sm-1 d-none d-sm-flex"></div>`;
         }
 
         // Build categories badges
         let categoriesHtml = '';
-        if (post.category_names && post.category_names.length) {
-          categoriesHtml = post.category_names.map((cat, idx) => {
-            let catUrl = post.categories[idx] || '#';
-            return `<a href="${escapeHtml(catUrl)}" class="badge chulapa-pill-bg-secondary mx-1">${escapeHtml(cat)}</a>`;
-          }).join('');
+        if (post.categories && post.categories.length) {
+          categoriesHtml = post.categories.map(cat => `
+            <a href="${escapeHtml(cat.url)}" class="badge chulapa-pill-bg-secondary mx-1 position-relative" style="z-index: 2;">${escapeHtml(cat.name)}</a>
+          `).join('');
         }
 
         // Build tags badges
         let tagsHtml = '';
-        if (post.tag_names && post.tag_names.length) {
-          tagsHtml = post.tag_names.map((tag, idx) => {
-            let tagUrl = post.tags[idx] || '#';
-            return `<a href="${escapeHtml(tagUrl)}" class="badge chulapa-pill-bg-primary mx-1">${escapeHtml(tag)}</a>`;
-          }).join('');
+        if (post.tags && post.tags.length) {
+          tagsHtml = post.tags.map(tag => `
+            <a href="${escapeHtml(tag.url)}" class="badge chulapa-pill-bg-primary mx-1 position-relative" style="z-index: 2;">${escapeHtml(tag.name)}</a>
+          `).join('');
         }
 
         const cardHtml = `
           <div class="col-12 mb-2">
-            <div class="card chulapa-border-card-index">
+            <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative">
               <div class="row g-0">
                 ${imageBlock}
                 <div class="col-sm">
                   <article class="card-body chulapa-links-hover-only">
-                    <a href="${escapeHtml(post.url)}"><h5 class="card-title">${escapeHtml(post.title)}</h5></a>
+                    <a href="${escapeHtml(post.url)}" class="stretched-link"><h5 class="card-title">${escapeHtml(post.title)}</h5></a>
                     ${post.subtitle ? `<h6 class="card-subtitle mb-2 text-muted">${escapeHtml(post.subtitle)}</h6>` : ''}
-                    <div class="card-text">${escapeHtml(post.excerpt)}</div>
+                    <div class="card-text mb-3">${escapeHtml(post.excerpt)}</div>
+                    <a href="${escapeHtml(post.url)}" class="btn btn-outline-primary rounded-pill mt-2 position-relative" style="z-index: 2;">
+                      Continue reading <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                   </article>
-                  <div class="border-top-0 card-footer border-primary chulapa-bg-transparent">
+                  <div class="border-top-0 card-footer border-primary chulapa-bg-transparent mt-2">
                     ${post.date ? `<p class="small text-right font-italic mb-1"><time datetime="${escapeHtml(post.date)}">${escapeHtml(post.date)}</time></p>` : ''}
                     ${categoriesHtml}
                     ${tagsHtml}
@@ -201,3 +195,37 @@ layout: default
     if (btn) btn.addEventListener('click', loadMorePosts);
   });
 </script>
+
+<style>
+  /* Ensure consistent card styling */
+  .rounded-4 { border-radius: 0.75rem !important; }
+  .card .btn-outline-primary {
+    transition: all 0.2s ease;
+  }
+  .card .btn-outline-primary:hover i {
+    transform: translateX(4px);
+  }
+  .card .btn-outline-primary i {
+    transition: transform 0.2s ease;
+  }
+  /* Stretched-link override */
+  .stretched-link::after {
+    z-index: 1;
+  }
+  .position-relative {
+    position: relative;
+  }
+  .card-footer a.badge {
+    z-index: 2;
+    position: relative;
+  }
+  /* Load more and back to top buttons */
+  #loadmore-btn, #backToTopBtn {
+    border-radius: 50px !important;
+    transition: all 0.3s ease;
+  }
+  #loadmore-btn:hover, #backToTopBtn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
+</style>
