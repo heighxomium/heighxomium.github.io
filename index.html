@@ -8,78 +8,61 @@ include_on_search : false
 
 <style>
 /* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS (Enhanced)
 ═══════════════════════════════════════════════════════════ */
 :root {
   --gold:        #ffc107;
   --gold-dim:    rgba(255,193,7,0.18);
   --gold-glow:   rgba(255,193,7,0.35);
-  --surface-1:   rgba(33,37,41,0.9);
-  --surface-2:   rgba(22,25,28,0.75);
-  --border-sub:  rgba(255,255,255,0.08);
-  --txt-muted:   rgba(255,255,255,0.5);
-  --txt-soft:    rgba(255,255,255,0.72);
+  --surface-1:   rgba(33,37,41,0.92);
+  --surface-2:   rgba(22,25,28,0.85);
+  --border-sub:  rgba(255,255,255,0.09);
+  --txt-muted:   rgba(255,255,255,0.55);
+  --txt-soft:    rgba(255,255,255,0.78);
   --radius-lg:   1.25rem;
   --radius-xl:   1.75rem;
+  --transition:  all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   KEYFRAMES
-═══════════════════════════════════════════════════════════ */
+/* Keyframes */
 @keyframes fadeUp {
-  from { opacity:0; transform:translateY(22px); }
+  from { opacity:0; transform:translateY(30px); }
   to   { opacity:1; transform:translateY(0); }
 }
 @keyframes pulseBorder {
-  0%,100% { box-shadow: 0 0 0 0 var(--gold-glow),  inset 0 0 0 1px var(--gold); }
-  50%      { box-shadow: 0 0 28px 6px var(--gold-dim), inset 0 0 0 1px var(--gold); }
+  0%,100% { box-shadow: 0 0 0 0 var(--gold-glow), inset 0 0 0 1px var(--gold); }
+  50%     { box-shadow: 0 0 30px 8px var(--gold-dim), inset 0 0 0 1px var(--gold); }
 }
 @keyframes badgePulse {
   0%,100% { box-shadow: 0 0 0 0 rgba(255,193,7,0.4); }
-  60%     { box-shadow: 0 0 0 7px rgba(255,193,7,0); }
-}
-@keyframes spinSlow {
-  to { transform: rotate(360deg); }
+  60%     { box-shadow: 0 0 0 8px rgba(255,193,7,0); }
 }
 @keyframes shimmer {
   from { background-position: -200% center; }
-  to   { background-position:  200% center; }
-}
-@keyframes countUp {
-  from { opacity:0; transform:translateY(6px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes dotFloat {
-  0%,100% { transform:translateY(0)   scale(1); }
-  50%     { transform:translateY(-4px) scale(1.08); }
+  to   { background-position: 200% center; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   REVEAL ON SCROLL
-═══════════════════════════════════════════════════════════ */
+/* Reveal animations */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transform: translateY(25px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
-/* stagger children */
 .reveal-stagger > * {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(20px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
 }
-.reveal-stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:.05s; }
-.reveal-stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:.15s; }
-.reveal-stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:.25s; }
-.reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:.35s; }
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: .05s; }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: .15s; }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: .25s; }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: .35s; }
 
-/* ═══════════════════════════════════════════════════════════
-   BACKGROUND DOT GRID (hero atmosphere)
-═══════════════════════════════════════════════════════════ */
+/* Background */
 .page-outer {
   position: relative;
 }
@@ -87,528 +70,343 @@ include_on_search : false
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(255,193,7,0.09) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: radial-gradient(circle, rgba(255,193,7,0.085) 1px, transparent 1px);
+  background-size: 30px 30px;
   pointer-events: none;
   z-index: 0;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 80%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
 }
-.page-outer > * { position: relative; z-index: 1; }
 
-/* ═══════════════════════════════════════════════════════════
-   HERO
-═══════════════════════════════════════════════════════════ */
+/* Navbar */
+.navbar {
+  backdrop-filter: blur(12px);
+  transition: var(--transition);
+}
+.navbar.scrolled {
+  background-color: rgba(15,18,23,0.95) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.nav-link {
+  position: relative;
+  transition: var(--transition);
+}
+.nav-link:after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+.nav-link:hover:after,
+.nav-link.active:after {
+  width: 100%;
+}
+
+/* Hero */
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: .45rem;
+  gap: .5rem;
   background: var(--gold-dim);
   border: 1px solid var(--gold-glow);
   color: var(--gold);
   font-weight: 600;
-  font-size: .8rem;
-  letter-spacing: .04em;
-  padding: .45rem 1.1rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 1.25rem;
   border-radius: 50px;
-  animation: badgePulse 2.8s ease infinite;
-  margin-bottom: 1rem;
+  animation: badgePulse 3s ease infinite;
+  margin-bottom: 1.25rem;
 }
 .hero-title {
-  font-size: clamp(1.7rem, 5vw, 2.8rem);
+  font-size: clamp(2.2rem, 6vw, 3.5rem);
   font-weight: 800;
-  letter-spacing: -.02em;
-  line-height: 1.15;
-  background: linear-gradient(135deg, #fff 40%, var(--gold) 100%);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #fff 30%, var(--gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .hero-lead {
   color: var(--txt-soft);
-  font-size: clamp(.9rem, 2.5vw, 1.05rem);
-  max-width: 620px;
+  font-size: clamp(1rem, 2.8vw, 1.15rem);
+  max-width: 680px;
+  line-height: 1.6;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CTA CARD
-═══════════════════════════════════════════════════════════ */
-.cta-card-wrap a { text-decoration: none; color: inherit; }
+/* CTA Card */
 .cta-card {
   background: var(--surface-1);
   border: 1px solid var(--gold);
   border-radius: var(--radius-xl);
-  padding: 3rem 2rem;
+  padding: 3.25rem 2.25rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-  animation: pulseBorder 3s ease-in-out infinite;
-  transition: transform .3s ease;
-  cursor: pointer;
+  animation: pulseBorder 3.5s ease-in-out infinite;
+  transition: var(--transition);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
-.cta-card:hover { transform: translateY(-4px); }
-
+.cta-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(255,193,7,0.15);
+}
 .cta-card::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(255,193,7,.08) 50%, transparent 70%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255,193,7,0.1) 50%, transparent 70%);
   background-size: 200% 100%;
   opacity: 0;
-  transition: opacity .3s;
+  transition: opacity 0.4s;
 }
-.cta-card:hover::after { opacity:1; animation: shimmer 1.4s linear infinite; }
-
+.cta-card:hover::after {
+  opacity: 1;
+  animation: shimmer 1.6s linear infinite;
+}
 .cta-icon {
-  font-size: 3.5rem;
+  font-size: 3.8rem;
   color: var(--gold);
-  filter: drop-shadow(0 0 14px var(--gold-glow));
-  margin-bottom: .75rem;
-  display: block;
-  transition: transform .35s ease;
+  filter: drop-shadow(0 0 20px var(--gold-glow));
+  margin-bottom: 1rem;
+  transition: transform 0.4s ease;
 }
-.cta-card:hover .cta-icon { transform: scale(1.12) rotate(-4deg); }
-.cta-card h2 { font-size: clamp(1.2rem, 4vw, 1.75rem); font-weight: 700; color: #fff; }
-.cta-card .cta-sub { color: var(--txt-soft); font-size: clamp(.85rem, 2vw, 1rem); }
-.cta-arrow-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  background: var(--gold);
-  color: #212529;
-  font-weight: 700;
-  font-size: .82rem;
-  padding: .5rem 1.4rem;
-  border-radius: 50px;
-  margin-top: 1.1rem;
-  transition: gap .25s;
-}
-.cta-card:hover .cta-arrow-badge { gap: .7rem; }
-
-/* ═══════════════════════════════════════════════════════════
-   CATEGORY CARDS FIX[cite: 1]
-═══════════════════════════════════════════════════════════ */
-.cat-card {
-  background: var(--surface-1);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem 1.25rem;
-  text-align: center;
-  border: 1px solid var(--border-sub);
-  border-top: 3px solid var(--cat-accent, #6c757d);
-  transition: transform .3s ease, box-shadow .3s ease, border-color .3s;
-  cursor: default;
-  user-select: none;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.cat-card:hover {
-  transform: translateY(-7px);
-  box-shadow: 0 16px 36px rgba(0,0,0,0.35), 0 0 0 1px var(--cat-accent, #6c757d);
-}
-.cat-card[data-cat="apps"]  { --cat-accent: #4dabf7; }
-.cat-card[data-cat="movies"]{ --cat-accent: #f783ac; }
-.cat-card[data-cat="codes"] { --cat-accent: #69db7c; }
-.cat-card[data-cat="misc"]  { --cat-accent: #da77f2; }
-
-.cat-icon-ring {
-  width: 68px; height: 68px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto .9rem;
-  background: rgba(255,255,255,.04);
-  border: 2px solid var(--cat-accent, #6c757d);
-  box-shadow: 0 0 18px -4px var(--cat-accent, transparent);
-  transition: box-shadow .3s;
-}
-.cat-card:hover .cat-icon-ring {
-  box-shadow: 0 0 28px -2px var(--cat-accent, transparent);
-}
-.cat-icon-ring i { font-size: 1.9rem; color: var(--cat-accent, #fff); }
-.cat-card h3 { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .4rem; }
-.cat-card p  { font-size: .8rem; color: var(--txt-soft); flex: 1; margin-bottom: .7rem; }
-.cat-badge {
-  font-size: .7rem;
-  font-weight: 600;
-  padding: .25rem .75rem;
-  border-radius: 50px;
-  background: rgba(255,255,255,.07);
-  color: var(--cat-accent, #fff);
-  border: 1px solid var(--cat-accent, transparent);
-  letter-spacing: .03em;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   STATS / HOW-IT-WORKS PANEL FIX[cite: 1]
-═══════════════════════════════════════════════════════════ */
-.info-panel {
-  background: var(--surface-2);
-  backdrop-filter: blur(6px);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-sub);
-  border-left: 4px solid var(--gold);
-  overflow: hidden;
-}
-.info-divider-v { width:1px; background: var(--border-sub); }
-
-.stat-block { text-align: center; }
-.stat-num {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 800;
-  color: var(--gold);
-  display: block;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity .4s ease .2s, transform .4s ease .2s;
-  transform: translateY(6px);
-}
-.stat-num.counted { opacity:1; transform:none; }
-.stat-label { font-size: .74rem; color: var(--txt-muted); margin-top: .25rem; }
-
-.trust-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  font-size: .75rem;
-  color: var(--txt-muted);
-  margin-top: .85rem;
-}
-
-.how-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  font-size: .75rem;
-  font-weight: 500;
-  padding: .35rem .9rem;
-  border-radius: 50px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--border-sub);
-  color: rgba(255,255,255,.8);
-  transition: background .2s;
-}
-.how-badge:hover { background: rgba(255,255,255,.1); }
-.how-badge .dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE TILES
-═══════════════════════════════════════════════════════════ */
-.feature-tile {
-  background: var(--surface-1);
-  border: 1px solid var(--border-sub);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem 1rem;
-  text-align: center;
-  transition: transform .25s ease, border-color .25s;
-  cursor: default; user-select: none;
-}
-.feature-tile:hover {
-  transform: translateY(-4px);
-  border-color: var(--gold-glow);
-}
-.feature-tile i {
-  font-size: 1.8rem;
-  color: var(--gold);
-  margin-bottom: .6rem;
-  display: block;
-  transition: transform .3s;
-}
-.feature-tile:hover i { transform: scale(1.15); }
-.feature-tile h6 { color: #fff; font-weight: 700; font-size: .92rem; margin-bottom: .25rem; }
-.feature-tile small { color: var(--txt-muted); font-size: .78rem; }
-
-/* ═══════════════════════════════════════════════════════════
-   SECTION LABEL
-═══════════════════════════════════════════════════════════ */
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  margin-top: .5rem;
-  margin-bottom: 1.4rem;
-}
-.section-label::before,
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border-sub);
-}
-.section-label span {
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--txt-muted);
-  white-space: nowrap;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   BACK TO TOP
-═══════════════════════════════════════════════════════════ */
-.btt-btn {
-  background: transparent;
-  border: 1px solid rgba(255,193,7,.4);
-  color: var(--gold);
-  border-radius: 50px;
-  padding: .55rem 2.2rem;
-  font-weight: 600;
-  font-size: .88rem;
-  letter-spacing: .04em;
-  transition: all .25s ease;
-  cursor: pointer;
-}
-.btt-btn:hover {
-  background: var(--gold);
-  color: #212529;
-  border-color: var(--gold);
-  box-shadow: 0 0 24px var(--gold-glow);
-  transform: translateY(-2px);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FOOTER NOTE
-═══════════════════════════════════════════════════════════ */
-.footer-note {
-  font-size: .75rem;
-  color: var(--txt-muted);
-  text-align: center;
-  padding-top: 1.1rem;
-  margin-top: 1.1rem;
-  border-top: 1px solid var(--border-sub);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   MOBILE ADJUSTMENTS[cite: 1]
-═══════════════════════════════════════════════════════════ */
-@media (max-width: 575.98px) {
-  .page-outer { padding-left: 1rem !important; padding-right: 1rem !important; }
-  .cta-card   { padding: 2rem 1.25rem; }
-  .cat-card   { flex-direction: row; text-align: left; padding: 1rem; gap: .85rem;
-                border-top: 1px solid var(--border-sub);
-                border-left: 3px solid var(--cat-accent, #6c757d); }
-  .cat-icon-ring { margin: 0; flex-shrink: 0; width:52px; height:52px; }
-  .cat-icon-ring i { font-size: 1.5rem; }
-  .cat-card p { margin-bottom: .4rem; }
-  .btt-btn    { width: 100%; text-align: center; }
+.cta-card:hover .cta-icon {
+  transform: scale(1.15) rotate(-6deg);
 }
 </style>
 
-<div class="px-3 px-md-4 px-lg-5 py-5 page-outer" style="padding: 3rem 1.5rem; max-width: 1200px; margin: 0 auto;">
-
-  <!-- ── Hero ──────────────────────────────────────────────── -->
-  <div class="text-center mb-5 reveal" style="animation: fadeUp .6s ease both; margin-bottom: 3rem !important;">
-    <div class="hero-badge">
-      <i class="fas fa-link"></i> Premium Linkvertise Library
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent" id="mainNav">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold fs-4 d-flex align-items-center" href="/">
+      <i class="fas fa-bolt text-warning me-2"></i> Heighxomium
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center gap-1">
+        <li class="nav-item"><a class="nav-link px-3" href="/pages/index.pages/linkvertise">Library</a></li>
+        <li class="nav-item"><a class="nav-link px-3" href="#">Categories</a></li>
+        <li class="nav-item"><a class="nav-link px-3" href="#">Blog</a></li>
+        <li class="nav-item">
+          <a href="/pages/index.pages/linkvertise" class="btn btn-warning btn-sm px-4 py-2 fw-semibold rounded-pill">
+            <i class="fas fa-arrow-right me-1"></i> Browse All
+          </a>
+        </li>
+      </ul>
     </div>
-    <h1 class="hero-title mb-3" style="margin-bottom: 1rem;">Apps · Movies · Codes · More</h1>
-    <p class="hero-lead mx-auto" style="margin-left: auto; margin-right: auto; margin-bottom: 1.5rem;">
-      Fast access to exclusive files, software, media, and resources through secure Linkvertise gates. Explore our curated collection below.
-    </p>
   </div>
+</nav>
 
-  <!-- ── CTA Card ──────────────────────────────────────────── -->
-  <div class="cta-card-wrap mb-5 reveal" style="margin-bottom: 3rem !important;">
-    <a href="/pages/index.pages/linkvertise">
-      <div class="cta-card">
-        <i class="fas fa-leaf cta-icon"></i>
-        <h2>View All Posts</h2>
-        <p class="cta-sub px-md-4">Browse the complete library — Apps, Movies, Codes, Misc &amp; more</p>
-        <div>
-          <span class="cta-arrow-badge">
+<div class="page-outer pt-5" style="padding-top: 6rem !important;">
+  <div class="px-3 px-md-4 px-lg-5 py-5" style="max-width: 1280px; margin: 0 auto;">
+
+    <!-- Hero -->
+    <div class="text-center mb-5 reveal" style="padding-top: 2rem;">
+      <div class="hero-badge mx-auto">
+        <i class="fas fa-link"></i> Premium Linkvertise Library
+      </div>
+      <h1 class="hero-title mb-4">Apps · Movies · Codes · More</h1>
+      <p class="hero-lead mx-auto">
+        Fast access to exclusive files, software, media, and resources through secure Linkvertise gates. Explore our curated collection below.
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card-wrap mb-5 reveal mx-auto" style="max-width: 520px;">
+      <a href="/pages/index.pages/linkvertise" class="text-decoration-none">
+        <div class="cta-card">
+          <i class="fas fa-leaf cta-icon"></i>
+          <h2 class="mb-3">View All Posts</h2>
+          <p class="cta-sub px-md-5 mb-4">Browse the complete library — Apps, Movies, Codes, Misc &amp; more</p>
+          <span class="cta-arrow-badge d-inline-flex align-items-center gap-2">
             Access Linkvertise Posts <i class="fas fa-arrow-right"></i>
           </span>
         </div>
-      </div>
-    </a>
-  </div>
-
-  <!-- ── Section label ─────────────────────────────────────── -->
-  <div class="section-label reveal" style="margin-bottom: 1.5rem; margin-top: 2rem;"><span>Browse by category</span></div>
-
-  <!-- ── Category cards FIX[cite: 1] ────────────────────────── -->
-  <div class="row g-3 g-md-4 mb-5 reveal-stagger" style="margin-bottom: 3rem !important;">
-
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cat-card" data-cat="apps">
-        <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
-        <div>
-          <h3>📱 Premium Apps</h3>
-          <p>Modded APKs, productivity tools, design software, and exclusive applications.</p>
-          <span class="cat-badge">New daily</span>
-        </div>
-      </div>
+      </a>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cat-card" data-cat="movies">
-        <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
-        <div>
-          <h3>🎬 Movies &amp; Series</h3>
-          <p>HD releases, complete seasons, collections and subtitles.</p>
-          <span class="cat-badge">Trending now</span>
-        </div>
-      </div>
-    </div>
+    <!-- Categories -->
+    <div class="section-label reveal mb-4"><span>Browse by category</span></div>
+    <div class="row g-4 mb-5 reveal-stagger">
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cat-card" data-cat="codes">
-        <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
-        <div>
-          <h3>💻 Codes &amp; Scripts</h3>
-          <p>Source codes, programming utilities, automation scripts.</p>
-          <span class="cat-badge">Open source</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="cat-card" data-cat="misc">
-        <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
-        <div>
-          <h3>🎲 Miscellaneous</h3>
-          <p>E-books, wallpapers, soundtracks, design assets, fonts, etc.</p>
-          <span class="cat-badge">Evergreen</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── Stats + How it works FIX[cite: 1] ────────────────── -->
-  <div class="section-label reveal" style="margin-bottom: 1.5rem;"><span>Platform overview</span></div>
-  <div class="info-panel mb-5 reveal" style="margin-bottom: 3rem !important;">
-    <div class="row g-0 flex-column flex-lg-row">
-
-      <!-- Stats -->
-      <div class="col-12 col-lg-6 p-4 pb-3" style="padding: 1.5rem !important;">
-        <h5 class="text-white fw-bold mb-3" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6; margin-bottom: 1rem;">
-          Platform Stats
-        </h5>
-        <div class="row g-0 text-center">
-          <div class="col-4 border-end py-3 px-2" style="border-color:var(--border-sub)!important; padding: 1rem 0.5rem;">
-            <span class="stat-num" data-target="890" data-suffix="+">0</span>
-            <div class="stat-label mt-1">Total files</div>
-          </div>
-          <div class="col-4 border-end py-3 px-2" style="border-color:var(--border-sub)!important; padding: 1rem 0.5rem;">
-            <span class="stat-num" data-target="35" data-suffix="K+">0</span>
-            <div class="stat-label mt-1">Downloads</div>
-          </div>
-          <div class="col-4 py-3 px-2" style="padding: 1rem 0.5rem;">
-            <span class="stat-num" data-target="4.8" data-suffix="★" data-float="1">0</span>
-            <div class="stat-label mt-1">User trust</div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="cat-card h-100" data-cat="apps">
+          <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
+          <div>
+            <h3 class="h5 fw-bold mb-2">📱 Premium Apps</h3>
+            <p class="small mb-3 text-secondary">Modded APKs, productivity tools, design software, and exclusive applications.</p>
+            <span class="cat-badge">New daily</span>
           </div>
         </div>
-        <div class="trust-badge" style="margin-top: 1rem;">
-          <i class="fas fa-shield-alt text-success"></i>
-          All content scanned &amp; verified daily
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="cat-card h-100" data-cat="movies">
+          <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
+          <div>
+            <h3 class="h5 fw-bold mb-2">🎬 Movies &amp; Series</h3>
+            <p class="small mb-3 text-secondary">HD releases, complete seasons, collections and subtitles.</p>
+            <span class="cat-badge">Trending now</span>
+          </div>
         </div>
       </div>
 
-      <!-- Mobile hr -->
-      <div class="d-lg-none mx-4"><hr style="border-color:var(--border-sub); margin: 0 1.5rem;"></div>
-
-      <!-- Vertical divider desktop -->
-      <div class="col-auto d-none d-lg-flex px-0 align-items-stretch">
-        <div class="info-divider-v"></div>
-      </div>
-
-      <!-- How it works -->
-      <div class="col-12 col-lg-6 p-4" style="padding: 1.5rem !important;">
-        <h5 class="text-white fw-bold mb-3" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6; margin-bottom: 1rem;">
-          How Linkvertise works
-        </h5>
-        <p style="color:var(--txt-soft);font-size:.88rem;line-height:1.65; margin-bottom: 1rem;">
-          Complete a quick task — a short survey, captcha, or a few-second wait — to unlock premium download links.
-          Safe, fast, and supports the server. No tricks.
-        </p>
-        <div class="d-flex flex-wrap gap-2 mt-3" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
-          <span class="how-badge"><span class="dot bg-success"></span> No virus</span>
-          <span class="how-badge"><span class="dot" style="background:var(--gold)"></span> ~10s wait</span>
-          <span class="how-badge"><span class="dot" style="background:#4dabf7"></span> Worldwide</span>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="cat-card h-100" data-cat="codes">
+          <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
+          <div>
+            <h3 class="h5 fw-bold mb-2">💻 Codes &amp; Scripts</h3>
+            <p class="small mb-3 text-secondary">Source codes, programming utilities, automation scripts.</p>
+            <span class="cat-badge">Open source</span>
+          </div>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ── Feature tiles ─────────────────────────────────────── -->
-  <div class="section-label reveal" style="margin-bottom: 1.5rem;"><span>Why use this</span></div>
-  <div class="row g-3 g-md-4 mb-5 reveal-stagger" style="margin-bottom: 3rem !important;">
-    <div class="col-12 col-sm-4">
-      <div class="feature-tile">
-        <i class="fas fa-database"></i>
-        <h6>Daily Updates</h6>
-        <small>Fresh file uploads every single day</small>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="cat-card h-100" data-cat="misc">
+          <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
+          <div>
+            <h3 class="h5 fw-bold mb-2">🎲 Miscellaneous</h3>
+            <p class="small mb-3 text-secondary">E-books, wallpapers, soundtracks, design assets, fonts, etc.</p>
+            <span class="cat-badge">Evergreen</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4">
-      <div class="feature-tile">
-        <i class="fas fa-headset"></i>
-        <h6>Link Support</h6>
-        <small>Re-upload guarantee — just report or comment</small>
+
+    <!-- Stats + How it works -->
+    <div class="section-label reveal mb-4"><span>Platform overview</span></div>
+    <div class="info-panel mb-5 reveal p-4 p-lg-5">
+      <div class="row g-0 flex-column flex-lg-row">
+        <div class="col-12 col-lg-6 p-4">
+          <h5 class="text-white fw-bold mb-4 text-uppercase small tracking-widest opacity-75">Platform Stats</h5>
+          <div class="row text-center g-0">
+            <div class="col-4 border-end" style="border-color: var(--border-sub);">
+              <span class="stat-num d-block display-6 fw-bold text-warning" data-target="890" data-suffix="+">0</span>
+              <div class="stat-label small text-muted">Total files</div>
+            </div>
+            <div class="col-4 border-end" style="border-color: var(--border-sub);">
+              <span class="stat-num d-block display-6 fw-bold text-warning" data-target="35" data-suffix="K+">0</span>
+              <div class="stat-label small text-muted">Downloads</div>
+            </div>
+            <div class="col-4">
+              <span class="stat-num d-block display-6 fw-bold text-warning" data-target="4.8" data-suffix="★" data-float="1">0</span>
+              <div class="stat-label small text-muted">User trust</div>
+            </div>
+          </div>
+          <div class="trust-badge mt-4 d-inline-flex align-items-center gap-2">
+            <i class="fas fa-shield-alt text-success"></i>
+            <span class="small">All content scanned &amp; verified daily</span>
+          </div>
+        </div>
+
+        <div class="col-lg-auto d-none d-lg-block border-start" style="border-color: var(--border-sub); width: 1px;"></div>
+
+        <div class="col-12 col-lg-6 p-4">
+          <h5 class="text-white fw-bold mb-4 text-uppercase small tracking-widest opacity-75">How Linkvertise works</h5>
+          <p class="text-secondary mb-4" style="line-height: 1.7;">
+            Complete a quick task — a short survey, captcha, or a few-second wait — to unlock premium download links. Safe, fast, and supports the server. No tricks.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="how-badge px-3 py-2 rounded-pill small"><span class="dot bg-success d-inline-block rounded-circle me-1" style="width:8px;height:8px;"></span> No virus</span>
+            <span class="how-badge px-3 py-2 rounded-pill small"><span class="dot d-inline-block rounded-circle me-1" style="background:var(--gold);width:8px;height:8px;"></span> \~10s wait</span>
+            <span class="how-badge px-3 py-2 rounded-pill small"><span class="dot d-inline-block rounded-circle me-1" style="background:#4dabf7;width:8px;height:8px;"></span> Worldwide</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4">
-      <div class="feature-tile">
-        <i class="fas fa-layer-group"></i>
-        <h6>Multi-Category</h6>
-        <small>Apps, Movies, Code &amp; Misc all in one place</small>
+
+    <!-- Features -->
+    <div class="section-label reveal mb-4"><span>Why use this</span></div>
+    <div class="row g-4 mb-5 reveal-stagger">
+      <div class="col-12 col-md-4">
+        <div class="feature-tile text-center h-100">
+          <i class="fas fa-database mb-3 text-warning" style="font-size:2.2rem;"></i>
+          <h6 class="fw-bold">Daily Updates</h6>
+          <small class="text-secondary">Fresh file uploads every single day</small>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="feature-tile text-center h-100">
+          <i class="fas fa-headset mb-3 text-warning" style="font-size:2.2rem;"></i>
+          <h6 class="fw-bold">Link Support</h6>
+          <small class="text-secondary">Re-upload guarantee — just report or comment</small>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="feature-tile text-center h-100">
+          <i class="fas fa-layer-group mb-3 text-warning" style="font-size:2.2rem;"></i>
+          <h6 class="fw-bold">Multi-Category</h6>
+          <small class="text-secondary">Apps, Movies, Code &amp; Misc all in one place</small>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Back to top ───────────────────────────────────────── -->
-  <div class="text-center mb-4" style="margin-bottom: 2rem !important; text-align: center;">
-    <button class="btt-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-      Back to Top
-    </button>
-  </div>
+    <!-- Back to Top -->
+    <div class="text-center mb-5">
+      <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btt-btn btn btn-outline-warning px-5 py-3 rounded-pill fw-semibold" aria-label="Back to top">
+        <i class="fas fa-arrow-up me-2"></i> Back to Top
+      </button>
+    </div>
 
-  <!-- ── Footer note ───────────────────────────────────────── -->
-  <div class="footer-note" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-sub);">
-    <i class="fas fa-shield-heart me-1"></i>
-    All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep me motivated&hellip;
-  </div>
+    <!-- Footer Note -->
+    <div class="footer-note text-center py-4">
+      <i class="fas fa-shield-heart me-2"></i>
+      All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep me motivated…
+    </div>
 
+  </div>
 </div>
 
 <script>
+// Navbar scroll effect
+const nav = document.getElementById('mainNav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 80);
+});
+
+// Intersection Observer + Counters
 (function () {
-  /* ── Intersection reveal ────────────────────────────────── */
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+      if (e.isIntersecting) { 
+        e.target.classList.add('visible'); 
+        io.unobserve(e.target); 
+      }
     });
-  }, { threshold: 0.12 });
+  }, { threshold: 0.15 });
   document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
 
-  /* ── Animated stat counters ─────────────────────────────── */
   const statsIO = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
-      const el     = e.target;
+      const el = e.target;
       const target = parseFloat(el.dataset.target);
       const suffix = el.dataset.suffix || '';
-      const isFloat= !!el.dataset.float;
-      const dur    = 1200; // ms
-      const steps  = 40;
-      const step   = dur / steps;
-      let cur      = 0;
+      const isFloat = !!el.dataset.float;
+      const dur = 1400;
+      const steps = 45;
+      const step = dur / steps;
+      let cur = 0;
       el.classList.add('counted');
       const timer = setInterval(() => {
         cur += target / steps;
-        if (cur >= target) { cur = target; clearInterval(timer); }
+        if (cur >= target) { 
+          cur = target; 
+          clearInterval(timer); 
+        }
         el.textContent = isFloat ? cur.toFixed(1) + suffix : Math.round(cur) + suffix;
       }, step);
       statsIO.unobserve(el);
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.6 });
   document.querySelectorAll('.stat-num[data-target]').forEach(el => statsIO.observe(el));
 })();
-</script>
+   </script>
