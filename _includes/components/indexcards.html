@@ -1,0 +1,67 @@
+{%- assign alldocs = include.cacheddocs -%}
+{% for post in alldocs limit: include.cachedlimit %}
+<div class="col-12 mb-2">
+  <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative">
+    <div class="row g-0">
+      <a href="{{- post.url | absolute_url -}}" class="col-sm-1 chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient 
+        {% if post.header_img == nil and post.og_image == nil %} d-none d-sm-flex {% endif %}"
+        {% if post.header_img or post.og_image %} style="background-image: url('{{- post.og_image | default: post.header_img | absolute_url -}}')" {% endif %}>
+      </a>
+      <div class="col-sm">
+        <article class="card-body chulapa-links-hover-only">
+          <!-- Title is the stretched-link target -->
+          <a href="{{- post.url | absolute_url -}}" class="stretched-link"><h5 class="card-title">{{- post.title | default: "---" | markdownify | remove: '<p>' | remove: '</p>' | strip_newlines | strip -}}</h5></a>
+          {% if post.subtitle -%}<h6 class="card-subtitle mb-2 text-muted">{{- post.subtitle | markdownify | remove: '<p>' | remove: '</p>' | strip_newlines | strip -}}</h6>{%- endif %}
+
+          {%- assign fallbackdesc = post.content | markdownify | newline_to_br | replace:"<br />", ",.," | replace:"{{", ",.," | replace:"{%", ",.," | split: ",.," | first -%}
+          <div class="card-text mb-3">{{- post.excerpt | default: fallbackdesc | strip_html | escape_once -}}</div>
+          
+          <!-- Pill button: "Continue reading" (still works, but card itself is also clickable) -->
+          <a href="{{- post.url | absolute_url -}}" class="btn btn-outline-primary rounded-pill mt-2 position-relative" style="z-index: 2;">
+            Continue reading <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+        </article>
+        {% if post.date or post.show_tags or post.show_categories %}
+        <div class="border-top-0 card-footer border-primary chulapa-bg-transparent mt-2">
+          {% if post.date -%}<p class="small text-right font-italic mb-1">
+            {% if post.last_modified_at %}<i class="fa fa-redo fa-xs" aria-hidden="true"></i> {% endif %}
+            <time datetime="{{- post.date | date_to_xmlschema -}}">{{- post.date | date: "%d/%m/%Y" -}}</time>
+          </p>{%- endif %}
+          {%- for category in post.categories -%}
+            <a href="{{- category | replace: " ", "-" | prepend: "#" | prepend: post.cloudcategory_url | absolute_url | uri_escape -}}" class="badge chulapa-pill-bg-secondary mx-1 position-relative" style="z-index: 2;">{{- category -}}</a>
+          {%- endfor -%}
+          {%- for tag in post.tags -%}
+            <a href="{{- tag | replace: " ", "-" | prepend: "#" | prepend: post.cloudtag_url | absolute_url | uri_escape -}}" class="badge chulapa-pill-bg-primary mx-1 position-relative" style="z-index: 2;">{{- tag -}}</a>
+          {%- endfor -%}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<style>
+  .rounded-4 { border-radius: 0.75rem !important; }
+  .card .btn-outline-primary {
+    transition: all 0.2s ease;
+  }
+  .card .btn-outline-primary:hover i {
+    transform: translateX(4px);
+  }
+  .card .btn-outline-primary i {
+    transition: transform 0.2s ease;
+  }
+  /* Ensure stretched-link does not overlap interactive elements */
+  .stretched-link::after {
+    z-index: 1;
+  }
+  .position-relative {
+    position: relative;
+  }
+  .card-footer a.badge,
+  .card-footer a.badge:hover {
+    z-index: 2;
+    position: relative;
+  }
+</style>
