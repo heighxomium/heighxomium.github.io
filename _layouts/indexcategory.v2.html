@@ -11,7 +11,7 @@ layout: default
   </div>
 </div>
 
-<div id="loadmore-container" class="text-center mt-4 mb-5" style="display: none;">
+<div id="loadmore-container" class="text-center mt-4 mb-5">
   <button id="loadmore-btn" class="btn btn-primary btn-lg px-5 py-2 rounded-pill shadow-sm">
     <i class="fas fa-arrow-down mr-2"></i> Load more posts
     <i class="fas fa-spinner fa-pulse d-none ml-2" id="loadmore-spinner"></i>
@@ -56,10 +56,10 @@ layout: default
   const container = document.getElementById('posts-container');
   container.innerHTML = '';
 
-  // Show load more only if total posts exceed POSTS_PER_PAGE
+  // Initially hide load more container if not needed
   const totalPosts = allPosts.length;
-  if (totalPosts > POSTS_PER_PAGE) {
-    document.getElementById('loadmore-container').style.display = 'block';
+  if (totalPosts <= POSTS_PER_PAGE) {
+    document.getElementById('loadmore-container').style.display = 'none';
   }
 
   loadMorePosts();
@@ -80,11 +80,8 @@ layout: default
     const postsToLoad = allPosts.slice(start, end);
 
     if (postsToLoad.length === 0) {
-      if (btn) {
-        btn.innerHTML = '<i class="fas fa-check mr-2"></i> All posts loaded';
-        btn.disabled = true;
-      }
-      if (btnSpinner) btnSpinner.classList.add('d-none');
+      // All posts loaded → replace button with "Back to Top" (no icon)
+      replaceWithBackToTop();
       isLoading = false;
       return;
     }
@@ -131,7 +128,33 @@ layout: default
       isLoading = false;
       if (btnSpinner) btnSpinner.classList.add('d-none');
       if (btn) btn.disabled = false;
+
+      // If after loading, we've reached the end, replace button
+      if (currentPage > Math.ceil(totalPosts / POSTS_PER_PAGE)) {
+        replaceWithBackToTop();
+      }
     }, 200);
+  }
+
+  function replaceWithBackToTop() {
+    const btnContainer = document.getElementById('loadmore-container');
+    if (!btnContainer) return;
+    
+    btnContainer.innerHTML = `
+      <button id="backToTopBtn" class="btn btn-secondary btn-lg px-5 py-2 rounded-pill shadow-sm">
+        Back to top
+      </button>
+    `;
+    
+    const backBtn = document.getElementById('backToTopBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    }
   }
 
   function escapeHtml(str) {
@@ -183,12 +206,12 @@ layout: default
   .btn-outline-primary.rounded-pill:hover i {
     transform: translateX(4px);
   }
-  /* Load more button */
-  #loadmore-btn {
+  /* Load more button and back to top button */
+  #loadmore-btn, #backToTopBtn {
     border-radius: 50px !important;
     transition: all 0.3s ease;
   }
-  #loadmore-btn:hover {
+  #loadmore-btn:hover, #backToTopBtn:hover {
     transform: scale(1.02);
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
   }
@@ -196,4 +219,4 @@ layout: default
     opacity: 0.7;
     transform: none;
   }
-  </style>
+</style>
