@@ -390,6 +390,8 @@ include_on_search : false
 @media (max-width: 575.98px) {
   .page-outer { padding-left: 1rem !important; padding-right: 1rem !important; }
   .cta-card   { padding: 2rem 1.25rem; }
+  /* ADDED: Explicit vertical margin fix for mobile cards */
+  .cat-card, .feature-tile { margin-bottom: 1.25rem !important; }
   .cat-card   { flex-direction: row; text-align: left; padding: 1rem; gap: .85rem;
                 border-top: 1px solid var(--border-sub);
                 border-left: 3px solid var(--cat-accent, #6c757d); }
@@ -436,10 +438,10 @@ include_on_search : false
   <div class="section-label reveal"><span>Browse by category</span></div>
 
   <!-- ── Category cards ────────────────────────────────────── -->
-  <!-- MODIFIED: Increased gutter from g-3 g-md-4 to g-4 g-md-5 -->
+  <!-- ADDED: Bootstrap mb-4 spacing to every column -->
   <div class="row g-4 g-md-5 mb-5 reveal-stagger">
 
-    <div class="col-12 col-sm-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-lg-3 mb-4">
       <div class="cat-card" data-cat="apps">
         <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
         <div>
@@ -450,7 +452,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-lg-3 mb-4">
       <div class="cat-card" data-cat="movies">
         <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
         <div>
@@ -461,7 +463,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-lg-3 mb-4">
       <div class="cat-card" data-cat="codes">
         <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
         <div>
@@ -472,7 +474,7 @@ include_on_search : false
       </div>
     </div>
 
-    <div class="col-12 col-sm-6 col-lg-3">
+    <div class="col-12 col-sm-6 col-lg-3 mb-4">
       <div class="cat-card" data-cat="misc">
         <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
         <div>
@@ -544,23 +546,23 @@ include_on_search : false
 
   <!-- ── Feature tiles ─────────────────────────────────────── -->
   <div class="section-label reveal"><span>Why use this</span></div>
-  <!-- MODIFIED: Increased gutter from g-3 g-md-4 to g-4 g-md-5 -->
+  <!-- ADDED: mb-4 spacing to every column -->
   <div class="row g-4 g-md-5 mb-5 reveal-stagger">
-    <div class="col-12 col-sm-4">
+    <div class="col-12 col-sm-4 mb-4">
       <div class="feature-tile">
         <i class="fas fa-database"></i>
         <h6>Daily Updates</h6>
         <small>Fresh file uploads every single day</small>
       </div>
     </div>
-    <div class="col-12 col-sm-4">
+    <div class="col-12 col-sm-4 mb-4">
       <div class="feature-tile">
         <i class="fas fa-headset"></i>
         <h6>Link Support</h6>
         <small>Re-upload guarantee — just report or comment</small>
       </div>
     </div>
-    <div class="col-12 col-sm-4">
+    <div class="col-12 col-sm-4 mb-4">
       <div class="feature-tile">
         <i class="fas fa-layer-group"></i>
         <h6>Multi-Category</h6>
