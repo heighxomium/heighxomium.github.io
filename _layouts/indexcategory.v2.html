@@ -129,10 +129,8 @@ layout: default
       };
     }
 
-    // Escapes a string for safe usage inside CSS url("...")
     function cssUrlEscape(url) {
       if (!url) return '';
-      // Escape backslash and double-quote
       return url.replace(/[\\"]/g, function(m) {
         return m === '\\' ? '\\\\' : '\\"';
       });
@@ -179,8 +177,7 @@ layout: default
       const card = clone.querySelector('.card');
       const imageDiv = clone.querySelector('.chulapa-card-img');
 
-      // ---- Desktop background (CSS variable) ----
-      // Construct a full CSS url() value or fallback gradient
+      // ---- Desktop background (CSS variable with full url()) ----
       let bgImageValue;
       if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
         const escapedUrl = cssUrlEscape(post.og_image);
@@ -190,16 +187,15 @@ layout: default
       }
       card.style.setProperty('--card-bg-image', bgImageValue);
 
-      // ---- Mobile/tablet image (visible below 992px) ----
+      // ---- Mobile/tablet image ----
       if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
-        // For mobile: set background-image directly (already safe via escapeHtml)
         imageDiv.style.backgroundImage = `url("${escapeHtml(post.og_image)}")`;
         imageDiv.classList.remove('d-none');
       } else {
         imageDiv.classList.add('d-none');
       }
 
-      // ---- Content (title, subtitle, excerpt, date, categories, tags) ----
+      // ---- Content ----
       const titleLink = clone.querySelector('.title-link');
       titleLink.href = post.url;
       titleLink.querySelector('.card-title').textContent = post.title || '';
@@ -344,7 +340,7 @@ layout: default
 </script>
 
 <style>
-  /* (CSS unchanged – same as previous version) */
+  /* ----- GLOBAL UTILITIES ----- */
   .visually-hidden {
     position: absolute !important;
     width: 1px !important;
@@ -356,41 +352,68 @@ layout: default
     white-space: nowrap !important;
     border: 0 !important;
   }
-  .rounded-4 { border-radius: 0.75rem !important; }
-  .stretched-link::after { z-index: 1; }
-  .z-index-2 { z-index: 2; position: relative; }
-  .transition-transform { 
-    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+
+  /* ----- ROUNDED CORNERS (UNIFIED) ----- */
+  .rounded-4 {
+    border-radius: 0.75rem !important;
   }
-  #loadmore-btn:hover, 
+
+  .card {
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  .card::before {
+    border-radius: inherit;
+  }
+
+  .chulapa-card-img {
+    border-radius: 0.75rem 0.75rem 0 0;
+    overflow: hidden;
+  }
+
+  #loadmore-btn,
+  #backToTopBtn {
+    border-radius: 0.75rem !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  #loadmore-btn:hover,
   #backToTopBtn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
   }
-  #loadmore-btn:active, 
+  #loadmore-btn:active,
   #backToTopBtn:active {
     transform: translateY(0);
   }
-  .hover-lift { 
-    transition: transform 0.2s ease-in-out; 
+
+  .hover-lift {
+    transition: transform 0.2s ease-in-out;
   }
-  .hover-lift:hover { 
-    transform: translateY(-4px); 
+  .hover-lift:hover {
+    transform: translateY(-4px);
   }
+
   .chulapa-min-h-10 { min-height: 12rem; }
   @media (min-width: 576px) { 
     .chulapa-min-h-10 { min-height: 10rem; } 
   }
+
+  .stretched-link::after { z-index: 1; }
+  .z-index-2 { z-index: 2; position: relative; }
+
+  /* ----- DESKTOP (≥992px) ----- */
   @media (min-width: 992px) {
-    .card-col { aspect-ratio: 1 / 1; }
+    .card-col {
+      aspect-ratio: 1 / 1;
+    }
     .card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
       background-size: cover;
       background-position: center;
       background-image: var(--card-bg-image, linear-gradient(135deg, #2c3e50, #3498db));
       position: relative;
+      border-radius: 0.75rem;
     }
     .card::before {
       content: '';
@@ -403,7 +426,9 @@ layout: default
       border-radius: inherit;
       z-index: 0;
     }
-    .chulapa-card-img { display: none !important; }
+    .chulapa-card-img {
+      display: none !important;
+    }
     .card-body {
       position: relative;
       z-index: 1;
@@ -412,6 +437,7 @@ layout: default
       flex-grow: 1;
       overflow-y: auto;
       scrollbar-width: thin;
+      border-radius: 0.75rem;
     }
     .card-title, .subtitle, .excerpt, .date, .categories-badges .badge, .tags-badges .badge {
       color: #fff !important;
@@ -430,22 +456,48 @@ layout: default
     .card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
     .card-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.5); border-radius: 10px; }
   }
+
+  /* ----- MOBILE & TABLET (<992px) ----- */
   @media (max-width: 991.98px) {
-    .card { background-image: none !important; }
-    .card::before { display: none; }
-    .card-body { color: inherit; background: inherit; }
-    .card-title, .subtitle, .excerpt, .date, .badge { color: inherit !important; }
-    .border-top { border-top-color: #dee2e6 !important; }
-    .chulapa-card-img { display: block !important; }
+    .card {
+      background-image: none !important;
+      border-radius: 0.75rem;
+    }
+    .card::before {
+      display: none;
+    }
+    .card-body {
+      color: inherit;
+      background: inherit;
+      border-radius: 0 0 0.75rem 0.75rem;
+    }
+    .card-title, .subtitle, .excerpt, .date, .badge {
+      color: inherit !important;
+    }
+    .border-top {
+      border-top-color: #dee2e6 !important;
+    }
+    .chulapa-card-img {
+      display: block !important;
+      border-radius: 0.75rem 0.75rem 0 0;
+    }
   }
+
+  /* Inner card body layout */
   .card-body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
-  .badge { display: inline-block; }
-  .row > .col, .row > [class*="col-"] { margin-bottom: 1rem; }
+  .badge {
+    display: inline-block;
+  }
+  .row > .col, .row > [class*="col-"] {
+    margin-bottom: 1rem;
+  }
   @media (min-width: 768px) {
-    .row > .col, .row > [class*="col-"] { margin-bottom: 0; }
+    .row > .col, .row > [class*="col-"] {
+      margin-bottom: 0;
+    }
   }
 </style>
