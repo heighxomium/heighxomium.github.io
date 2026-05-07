@@ -344,7 +344,7 @@ layout: default
     border: 0 !important;
   }
 
-  /* ----- ROUNDED CORNERS & STABLE OVERLAY ----- */
+  /* ----- ROUNDED CORNERS & STABLE OVERLAY (NO BLEED) ----- */
   .rounded-4 {
     border-radius: 0.75rem !important;
   }
@@ -352,18 +352,25 @@ layout: default
   .card {
     border-radius: 0.75rem;
     overflow: hidden;
-    /* Force GPU rendering and prevent subpixel flicker on zoom */
+    /* Force GPU layer on parent only, not on pseudo */
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: transform;
+    /* Prevent background from bleeding under border radius */
+    background-clip: padding-box;
   }
 
   .card::before {
-    border-radius: inherit;
-    /* Ensure pseudo-element stays perfectly aligned */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    /* No transition to avoid flicker */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Explicit border radius to match card exactly */
+    border-radius: 0.75rem;
+    /* No transform on pseudo to avoid subpixel misalignment */
+    pointer-events: none;
     transition: none;
   }
 
@@ -415,12 +422,6 @@ layout: default
       position: relative;
     }
     .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
       background: rgba(0, 0, 0, 0.55);
       z-index: 0;
     }
