@@ -64,14 +64,11 @@ layout: default
     // ----------------------------------------------------------
     // LIQUID-GENERATED POSTS DATA (SAFE JSON)
     // ----------------------------------------------------------
-    // The entire block below produces a valid JavaScript array.
-    // If Liquid fails, we fall back to empty array.
     let allPosts = [];
     try {
       allPosts = [
         {%- assign collection = site[page.include_collection] -%}
         {%- unless collection %}
-          // Warning: collection missing
           console.warn("indexcategory: collection '{{ page.include_collection }}' not found");
         {%- endunless -%}
         {%- assign default_img = site.default_header_image | absolute_url -%}
@@ -132,9 +129,10 @@ layout: default
       };
     }
 
+    // Escapes a string for safe usage inside CSS url("...")
     function cssUrlEscape(url) {
       if (!url) return '';
-      // Escape backslash and double-quote for CSS string
+      // Escape backslash and double-quote
       return url.replace(/[\\"]/g, function(m) {
         return m === '\\' ? '\\\\' : '\\"';
       });
@@ -181,23 +179,31 @@ layout: default
       const card = clone.querySelector('.card');
       const imageDiv = clone.querySelector('.chulapa-card-img');
 
-      // Background image (desktop)
-      let bgCss = null;
+      // ---- Desktop background (CSS variable) ----
+      // Construct a full CSS url() value or fallback gradient
+      let bgImageValue;
       if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
-        bgCss = cssUrlEscape(post.og_image);
+        const escapedUrl = cssUrlEscape(post.og_image);
+        bgImageValue = `url("${escapedUrl}")`;
+      } else {
+        bgImageValue = 'linear-gradient(135deg, #2c3e50, #3498db)';
+      }
+      card.style.setProperty('--card-bg-image', bgImageValue);
+
+      // ---- Mobile/tablet image (visible below 992px) ----
+      if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
+        // For mobile: set background-image directly (already safe via escapeHtml)
         imageDiv.style.backgroundImage = `url("${escapeHtml(post.og_image)}")`;
         imageDiv.classList.remove('d-none');
       } else {
         imageDiv.classList.add('d-none');
       }
-      card.style.setProperty('--card-bg-image', bgCss || 'linear-gradient(135deg, #2c3e50, #3498db)');
 
-      // Title & link
+      // ---- Content (title, subtitle, excerpt, date, categories, tags) ----
       const titleLink = clone.querySelector('.title-link');
       titleLink.href = post.url;
       titleLink.querySelector('.card-title').textContent = post.title || '';
 
-      // Subtitle
       const subtitleEl = clone.querySelector('.subtitle');
       if (post.subtitle && post.subtitle !== 'null') {
         subtitleEl.textContent = post.subtitle;
@@ -205,10 +211,8 @@ layout: default
         subtitleEl.style.display = 'none';
       }
 
-      // Excerpt
       clone.querySelector('.excerpt').textContent = post.excerpt || '';
 
-      // Date
       const dateEl = clone.querySelector('.date');
       if (post.date && post.date !== 'null') {
         const safeDate = escapeHtml(post.date);
@@ -217,7 +221,6 @@ layout: default
         dateEl.parentElement.style.display = 'none';
       }
 
-      // Categories
       const catContainer = clone.querySelector('.categories-badges');
       if (post.categories && Array.isArray(post.categories)) {
         for (const cat of post.categories) {
@@ -229,7 +232,6 @@ layout: default
         }
       }
 
-      // Tags
       const tagContainer = clone.querySelector('.tags-badges');
       if (post.tags && Array.isArray(post.tags)) {
         for (const tag of post.tags) {
@@ -259,7 +261,6 @@ layout: default
       const start = (currentPage - 1) * currentPostsPerPage;
       const postsToLoad = allPosts.slice(start, start + currentPostsPerPage);
 
-      // No more posts? Show back-to-top or empty state
       if (postsToLoad.length === 0) {
         if (currentPage === 1 && totalPosts === 0) {
           showEmptyState();
@@ -272,12 +273,10 @@ layout: default
         return;
       }
 
-      // Remove initial spinner after first batch
       if (initialSpinner && currentPage === 1) {
         initialSpinner.remove();
       }
 
-      // Render fragment
       const fragment = document.createDocumentFragment();
       for (const post of postsToLoad) {
         try {
@@ -294,7 +293,6 @@ layout: default
       if (btnSpinner) btnSpinner.classList.add('d-none');
       if (loadmoreBtn) loadmoreBtn.disabled = false;
 
-      // If we've reached the end, replace load more with back-to-top
       if (currentPage * currentPostsPerPage >= totalPosts) {
         replaceWithBackToTop();
       }
@@ -304,7 +302,6 @@ layout: default
     // INITIALISATION
     // ----------------------------------------------------------
     function init() {
-      // Validate essential DOM elements
       if (!cardTemplate) {
         showError("Card template missing – check HTML");
         return;
@@ -317,35 +314,27 @@ layout: default
       currentPostsPerPage = getPostsPerPage();
       currentPage = 1;
 
-      // Handle zero posts
       if (totalPosts === 0) {
         if (loadmoreContainer) loadmoreContainer.style.display = 'none';
         showEmptyState();
         return;
       }
 
-      // Show "Load more" button only if needed
       loadmoreContainer.style.display = totalPosts <= currentPostsPerPage ? 'none' : 'block';
-
-      // Load first batch
       loadMorePosts();
 
-      // Attach event listener
       if (loadmoreBtn) {
         loadmoreBtn.addEventListener('click', loadMorePosts);
       }
     }
 
-    // Handle resize gracefully
     window.addEventListener('resize', debounce(() => {
       const newPerPage = getPostsPerPage();
       if (newPerPage !== currentPostsPerPage) {
         currentPostsPerPage = newPerPage;
-        // Note: Already loaded posts remain; only new loads use new page size.
       }
     }, 200));
 
-    // Start after DOM is ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -355,7 +344,7 @@ layout: default
 </script>
 
 <style>
-  /* (Same CSS as before – unchanged for brevity) */
+  /* (CSS unchanged – same as previous version) */
   .visually-hidden {
     position: absolute !important;
     width: 1px !important;
