@@ -5,7 +5,6 @@ layout: default
 
 <div class="container px-lg-3">
   <div id="posts-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
-    <!-- Initial loading spinner -->
     <div class="col-12 text-center py-5" id="initial-spinner">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading posts…</span>
@@ -24,7 +23,7 @@ layout: default
 <template id="card-template">
   <div class="col mb-4 card-col">
     <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
-      <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient" style="background-size: cover; background-position: center;" aria-label="Post thumbnail"></div>
+      <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img" style="background-size: cover; background-position: center;" aria-label="Post thumbnail"></div>
       <div class="card-body d-flex flex-column flex-grow-1 overflow-auto position-relative">
         <article class="flex-grow-1">
           <a href="#" class="stretched-link title-link text-decoration-none"><h5 class="card-title fw-bold mb-2"></h5></a>
@@ -42,24 +41,28 @@ layout: default
 </template>
 
 <script>
-  // [PERF] Constants
+  // --------------------------------------------------------------
+  // Constants & configuration
+  // --------------------------------------------------------------
   const POSTS_PER_PAGE_DESKTOP = 12;
   const POSTS_PER_PAGE_MOBILE = 10;
   const BREAKPOINT_LG = 992;
-  
-  // [PERF] Cached DOM elements
+
+  // DOM cache
   const cardTemplate = document.getElementById('card-template');
   const container = document.getElementById('posts-container');
   const loadmoreContainer = document.getElementById('loadmore-container');
   const loadmoreBtn = document.getElementById('loadmore-btn');
   const btnSpinner = document.getElementById('loadmore-spinner');
   const initialSpinner = document.getElementById('initial-spinner');
-  
+
   let currentPage = 1;
   let currentPostsPerPage = getPostsPerPage();
   let isLoading = false;
 
-  // Helper: Debounce function
+  // --------------------------------------------------------------
+  // Utilities
+  // --------------------------------------------------------------
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -68,31 +71,43 @@ layout: default
     };
   }
 
-  // Helper: posts per page based on screen width
   function getPostsPerPage() {
     return window.innerWidth >= BREAKPOINT_LG ? POSTS_PER_PAGE_DESKTOP : POSTS_PER_PAGE_MOBILE;
   }
 
-  // [SEC] Proper CSS string escaping for url()
-  function cssUrlEscape(str) {
-    if (!str) return '';
-    // Encode problematic characters for CSS url().
-    // Replace backslash, quotes, parentheses, and whitespace.
-    return str.replace(/[\\"\'()\s]/g, function(match) {
-      return '\\' + match.charCodeAt(0).toString(16) + ' ';
+  /**
+   * Secure CSS url() escaping.
+   * - Output: url("escaped_url")
+   * - Escapes double quotes and backslashes inside the URL.
+   * - Does NOT break valid URL characters.
+   */
+  function cssUrlEscape(url) {
+    if (!url) return '';
+    // Escape backslash and double-quote for CSS string context
+    const escaped = url.replace(/[\\"]/g, function(m) {
+      return m === '\\' ? '\\\\' : '\\"';
     });
+    return `url("${escaped}")`;
   }
 
-  // [SEC] HTML escape (for text content inside attributes)
+  /**
+   * Simple HTML escape for text content (not attributes).
+   * Used only for <time datetime=""> where date string is safe.
+   */
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
   }
 
-  // Embedded posts data (escaped for safety)
-  // [PERF] Liquid-generated JSON – unchanged
-  const allPosts = [
+  // --------------------------------------------------------------
+  // Embedded posts data (Liquid-generated JSON)
+  // --------------------------------------------------------------
+  const allPosts = (function() {
     {% assign collection = site[page.include_collection] %}
+    {% unless collection %}
+      console.warn('Invalid or missing include_collection: {{ page.include_collection | jsonify }}');
+    {% endunless %}
+
     {% if page.category_name %}
       {% assign posts_to_show = collection | where: "categories", page.category_name %}
     {% elsif page.tag_name %}
@@ -101,15 +116,18 @@ layout: default
       {% assign posts_to_show = collection %}
     {% endif %}
 
+    // DEFAULT HEADER IMAGE from _config.yml (critical fix)
+    {% assign default_header_img = site.default_header_image | absolute_url %}
+    [
     {% for post in posts_to_show %}
-      {% assign img = post.og_image | default: post.header_img %}
+      {% assign img = post.og_image | default: post.header_img | default: default_header_img %}
       {
         "title": {{ post.title | jsonify }},
         "subtitle": {{ post.subtitle | jsonify }},
         "date": {{ post.date | date: "%d/%m/%Y" | jsonify }},
         "excerpt": {{ post.excerpt | strip_html | truncatewords: 20 | jsonify }},
         "url": {{ post.url | absolute_url | jsonify }},
-        "og_image": {{ img | absolute_url | default: nil | jsonify }},
+        "og_image": {{ img | jsonify }},
         "categories": [
           {% for cat in post.categories %}
             { "name": {{ cat | jsonify }}, "url": {{ cat | replace: " ", "-" | prepend: "#" | prepend: post.cloudcategory_url | absolute_url | uri_escape | jsonify }} }{% unless forloop.last %},{% endunless %}
@@ -122,59 +140,58 @@ layout: default
         ]
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
-  ];
+    ]
+  })();
 
   const totalPosts = allPosts.length;
 
+  // --------------------------------------------------------------
+  // Rendering
+  // --------------------------------------------------------------
   function renderPost(post) {
-    // [PERF] Use cached template
     const clone = cardTemplate.content.cloneNode(true);
-    
     const card = clone.querySelector('.card');
-    // [SEC] Safe CSS background image using proper escaping
-    let bgImage;
-    if (post.og_image) {
-      const escapedUrl = cssUrlEscape(post.og_image);
-      bgImage = `url("${escapedUrl}")`;
+    const imageDiv = clone.querySelector('.chulapa-card-img');
+
+    // --- Header image (desktop bg + mobile img) ---
+    let bgCss = null;
+    if (post.og_image && post.og_image !== 'null') {
+      const imgUrl = post.og_image;
+      bgCss = cssUrlEscape(imgUrl);
+      imageDiv.style.backgroundImage = `url("${escapeHtml(imgUrl)}")`;
+      imageDiv.classList.remove('d-none');
     } else {
-      bgImage = 'linear-gradient(135deg, #2c3e50, #3498db)';
+      imageDiv.classList.add('d-none');
     }
-    card.style.setProperty('--card-bg-image', bgImage);
-    
+    // Fallback gradient (if no image, show gradient)
+    card.style.setProperty('--card-bg-image', bgCss || 'linear-gradient(135deg, #2c3e50, #3498db)');
+
+    // --- Content ---
     const titleLink = clone.querySelector('.title-link');
     titleLink.href = post.url;
     titleLink.querySelector('.card-title').textContent = post.title;
-    
+
     const subtitleEl = clone.querySelector('.subtitle');
-    if (post.subtitle) {
+    if (post.subtitle && post.subtitle !== 'null') {
       subtitleEl.textContent = post.subtitle;
     } else {
       subtitleEl.style.display = 'none';
     }
-    
-    clone.querySelector('.excerpt').textContent = post.excerpt;
-    
+
+    clone.querySelector('.excerpt').textContent = post.excerpt || '';
+
     const dateEl = clone.querySelector('.date');
-    if (post.date) {
+    if (post.date && post.date !== 'null') {
       const safeDate = escapeHtml(post.date);
       dateEl.innerHTML = `<time datetime="${safeDate}"><i class="far fa-calendar-alt me-1"></i>${safeDate}</time>`;
     } else {
       dateEl.parentElement.style.display = 'none';
     }
-    
-    // Mobile/tablet image
-    const imageDiv = clone.querySelector('.chulapa-card-img');
-    if (post.og_image) {
-      const escapedUrl = cssUrlEscape(post.og_image);
-      imageDiv.style.backgroundImage = `url("${escapedUrl}")`;
-      imageDiv.classList.remove('d-none');
-    } else {
-      imageDiv.classList.add('d-none');
-    }
-    
+
+    // Categories & tags
     const catContainer = clone.querySelector('.categories-badges');
-    if (post.categories?.length) {
-      for (const cat of post.categories) { // [PERF] faster than forEach
+    if (post.categories && post.categories.length) {
+      for (const cat of post.categories) {
         const badge = document.createElement('a');
         badge.href = cat.url;
         badge.className = 'badge chulapa-pill-bg-secondary me-1 mb-1 z-index-2';
@@ -182,9 +199,9 @@ layout: default
         catContainer.appendChild(badge);
       }
     }
-    
+
     const tagContainer = clone.querySelector('.tags-badges');
-    if (post.tags?.length) {
+    if (post.tags && post.tags.length) {
       for (const tag of post.tags) {
         const badge = document.createElement('a');
         badge.href = tag.url;
@@ -193,82 +210,101 @@ layout: default
         tagContainer.appendChild(badge);
       }
     }
-    
+
     return clone;
+  }
+
+  function showEmptyState() {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'col-12 text-center py-5';
+    emptyMsg.innerHTML = '<p class="lead">No posts found.</p>';
+    container.appendChild(emptyMsg);
   }
 
   function replaceWithBackToTop() {
     if (!loadmoreContainer) return;
-    // [PERF] Replace content once
     loadmoreContainer.innerHTML = `
       <button id="backToTopBtn" class="btn btn-secondary btn-lg px-5 py-2 rounded-4 shadow-sm transition-transform">
         <i class="fas fa-arrow-up me-2"></i> Back to top
       </button>
     `;
-    document.getElementById('backToTopBtn')?.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const backBtn = document.getElementById('backToTopBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
   }
 
   function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
-    
+
     if (btnSpinner && loadmoreBtn) {
       btnSpinner.classList.remove('d-none');
       loadmoreBtn.disabled = true;
     }
-    
+
     const start = (currentPage - 1) * currentPostsPerPage;
-    const end = start + currentPostsPerPage;
-    const postsToLoad = allPosts.slice(start, end);
-    
+    const postsToLoad = allPosts.slice(start, start + currentPostsPerPage);
+
     if (postsToLoad.length === 0) {
+      if (currentPage === 1 && totalPosts === 0) showEmptyState();
       replaceWithBackToTop();
       isLoading = false;
+      if (initialSpinner) initialSpinner.remove();
       return;
     }
-    
-    // [PERF] Remove artificial setTimeout – load immediately
-    if (initialSpinner) initialSpinner.remove();
-    
+
+    // Remove spinner after first batch
+    if (initialSpinner && currentPage === 1) initialSpinner.remove();
+
     const fragment = document.createDocumentFragment();
     for (const post of postsToLoad) {
       fragment.appendChild(renderPost(post));
     }
     container.appendChild(fragment);
-    
+
     currentPage++;
     isLoading = false;
-    
+
     if (btnSpinner) btnSpinner.classList.add('d-none');
     if (loadmoreBtn) loadmoreBtn.disabled = false;
-    
-    if (currentPage * currentPostsPerPage > totalPosts) {
+
+    if (currentPage * currentPostsPerPage >= totalPosts) {
       replaceWithBackToTop();
     }
   }
 
+  // --------------------------------------------------------------
+  // Initialisation
+  // --------------------------------------------------------------
   function init() {
     currentPostsPerPage = getPostsPerPage();
     currentPage = 1;
+
+    if (totalPosts === 0) {
+      if (loadmoreContainer) loadmoreContainer.style.display = 'none';
+      loadMorePosts(); // will show empty state
+      return;
+    }
+
     loadmoreContainer.style.display = totalPosts <= currentPostsPerPage ? 'none' : 'block';
     loadMorePosts();
-    loadmoreBtn?.addEventListener('click', loadMorePosts);
+
+    if (loadmoreBtn) loadmoreBtn.addEventListener('click', loadMorePosts);
   }
-  
+
   window.addEventListener('resize', debounce(() => {
-    const newPostsPerPage = getPostsPerPage();
-    if (newPostsPerPage !== currentPostsPerPage) {
-      currentPostsPerPage = newPostsPerPage;
+    const newPerPage = getPostsPerPage();
+    if (newPerPage !== currentPostsPerPage) {
+      currentPostsPerPage = newPerPage;
+      // Note: already rendered posts are not re‑laid out.
     }
-  }, 250));
+  }, 200));
 
   document.addEventListener('DOMContentLoaded', init);
 </script>
 
 <style>
-  /* (CSS unchanged except for minor formatting – kept as original) */
   .visually-hidden {
     position: absolute !important;
     width: 1px !important;
@@ -300,14 +336,6 @@ layout: default
   }
   .hover-lift:hover { 
     transform: translateY(-4px); 
-  }
-  .fade-in-up {
-    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
   }
   .chulapa-min-h-10 { min-height: 12rem; }
   @media (min-width: 576px) { 
@@ -370,8 +398,11 @@ layout: default
     .border-top { border-top-color: #dee2e6 !important; }
     .chulapa-card-img { display: block !important; }
   }
-  .card { display: flex; flex-direction: column; }
-  .card-body { display: flex; flex-direction: column; justify-content: space-between; }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
   .badge { display: inline-block; }
   .row > .col, .row > [class*="col-"] { margin-bottom: 1rem; }
   @media (min-width: 768px) {
