@@ -3,28 +3,28 @@ layout: default
 ---
 {{ content }}
 
-<div id="posts-container" class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4 pe-0">
-  <!-- Initial loading spinner -->
-  <div class="col-12 text-center py-5" id="initial-spinner">
-    <div class="spinner-border text-primary" role="status">
-      <span class="sr-only">Loading posts…</span>
+<div class="container px-lg-3">
+  <div id="posts-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <!-- Initial loading spinner -->
+    <div class="col-12 text-center py-5" id="initial-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading posts…</span>
+      </div>
     </div>
+  </div>
+
+  <div id="loadmore-container" class="d-flex justify-content-center mt-5 mb-5" style="display: none;">
+    <button id="loadmore-btn" class="btn btn-primary btn-lg px-5 py-2 rounded-4 shadow-sm transition-transform" aria-label="Load more posts">
+      <i class="fas fa-arrow-down me-2" aria-hidden="true"></i> Load more posts
+      <i class="fas fa-spinner fa-pulse d-none ms-2" id="loadmore-spinner" aria-hidden="true"></i>
+    </button>
   </div>
 </div>
 
-<div id="loadmore-container" class="d-flex justify-content-center mt-5 mb-5" style="display: none;">
-  <button id="loadmore-btn" class="btn btn-primary btn-lg px-5 py-2 rounded-4 shadow-sm transition-transform" aria-label="Load more posts">
-    <i class="fas fa-arrow-down me-2" aria-hidden="true"></i> Load more posts
-    <i class="fas fa-spinner fa-pulse d-none ms-2" id="loadmore-spinner" aria-hidden="true"></i>
-  </button>
-</div>
-
 <template id="card-template">
-  <div class="col h-100">
+  <div class="col mb-4">
     <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
-      <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient"
-           style="background-size: cover; background-position: center;" aria-label="Post thumbnail">
-      </div>
+      <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient" style="background-size: cover; background-position: center;" aria-label="Post thumbnail"></div>
       <div class="card-body d-flex flex-column flex-grow-1">
         <article class="flex-grow-1">
           <a href="#" class="stretched-link title-link text-decoration-none"><h5 class="card-title fw-bold mb-2"></h5></a>
@@ -42,7 +42,7 @@ layout: default
 </template>
 
 <script>
-  // ----- Helper: Debounce function for resize events -----
+  // Helper: Debounce function
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -51,7 +51,7 @@ layout: default
     };
   }
 
-  // ----- Helper: get posts per page based on screen width -----
+  // Helper: get posts per page based on screen width
   function getPostsPerPage() {
     return window.innerWidth >= 992 ? 15 : 10;
   }
@@ -60,7 +60,7 @@ layout: default
   let currentPostsPerPage = getPostsPerPage();
   let isLoading = false;
 
-  // ----- EMBEDDED POSTS DATA -----
+  // Embedded posts data (escaped for safety)
   const allPosts = [
     {% assign collection = site[page.include_collection] %}
     {% if page.category_name %}
@@ -70,7 +70,7 @@ layout: default
     {% else %}
       {% assign posts_to_show = collection %}
     {% endif %}
-    
+
     {% for post in posts_to_show %}
       {% assign img = post.og_image | default: post.header_img %}
       {
@@ -288,7 +288,7 @@ layout: default
     } 
   }
   
-  /* Ensure cards fill equal height */
+  /* Ensure cards fill equal height and columns have consistent bottom spacing */
   .card {
     display: flex;
     flex-direction: column;
@@ -303,5 +303,17 @@ layout: default
   /* Badge responsive spacing */
   .badge {
     display: inline-block;
+  }
+  
+  /* Additional safety – force gutter spacing on columns */
+  .row > .col,
+  .row > [class*="col-"] {
+    margin-bottom: 1rem;
+  }
+  @media (min-width: 768px) {
+    .row > .col,
+    .row > [class*="col-"] {
+      margin-bottom: 0;
+    }
   }
 </style>
