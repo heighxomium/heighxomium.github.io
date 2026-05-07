@@ -177,7 +177,6 @@ layout: default
       const card = clone.querySelector('.card');
       const imageDiv = clone.querySelector('.chulapa-card-img');
 
-      // ---- Desktop background (CSS variable with full url()) ----
       let bgImageValue;
       if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
         const escapedUrl = cssUrlEscape(post.og_image);
@@ -187,7 +186,6 @@ layout: default
       }
       card.style.setProperty('--card-bg-image', bgImageValue);
 
-      // ---- Mobile/tablet image ----
       if (post.og_image && typeof post.og_image === 'string' && post.og_image !== 'null') {
         imageDiv.style.backgroundImage = `url("${escapeHtml(post.og_image)}")`;
         imageDiv.classList.remove('d-none');
@@ -195,7 +193,6 @@ layout: default
         imageDiv.classList.add('d-none');
       }
 
-      // ---- Content ----
       const titleLink = clone.querySelector('.title-link');
       titleLink.href = post.url;
       titleLink.querySelector('.card-title').textContent = post.title || '';
@@ -242,9 +239,6 @@ layout: default
       return clone;
     }
 
-    // ----------------------------------------------------------
-    // LOAD MORE LOGIC
-    // ----------------------------------------------------------
     function loadMorePosts() {
       if (isLoading) return;
       isLoading = true;
@@ -294,9 +288,6 @@ layout: default
       }
     }
 
-    // ----------------------------------------------------------
-    // INITIALISATION
-    // ----------------------------------------------------------
     function init() {
       if (!cardTemplate) {
         showError("Card template missing – check HTML");
@@ -353,7 +344,7 @@ layout: default
     border: 0 !important;
   }
 
-  /* ----- ROUNDED CORNERS (UNIFIED) ----- */
+  /* ----- ROUNDED CORNERS & STABLE OVERLAY ----- */
   .rounded-4 {
     border-radius: 0.75rem !important;
   }
@@ -361,10 +352,19 @@ layout: default
   .card {
     border-radius: 0.75rem;
     overflow: hidden;
+    /* Force GPU rendering and prevent subpixel flicker on zoom */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 
   .card::before {
     border-radius: inherit;
+    /* Ensure pseudo-element stays perfectly aligned */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* No transition to avoid flicker */
+    transition: none;
   }
 
   .chulapa-card-img {
@@ -413,7 +413,6 @@ layout: default
       background-position: center;
       background-image: var(--card-bg-image, linear-gradient(135deg, #2c3e50, #3498db));
       position: relative;
-      border-radius: 0.75rem;
     }
     .card::before {
       content: '';
@@ -423,7 +422,6 @@ layout: default
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.55);
-      border-radius: inherit;
       z-index: 0;
     }
     .chulapa-card-img {
@@ -437,7 +435,6 @@ layout: default
       flex-grow: 1;
       overflow-y: auto;
       scrollbar-width: thin;
-      border-radius: 0.75rem;
     }
     .card-title, .subtitle, .excerpt, .date, .categories-badges .badge, .tags-badges .badge {
       color: #fff !important;
@@ -461,7 +458,6 @@ layout: default
   @media (max-width: 991.98px) {
     .card {
       background-image: none !important;
-      border-radius: 0.75rem;
     }
     .card::before {
       display: none;
