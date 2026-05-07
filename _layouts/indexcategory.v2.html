@@ -22,10 +22,10 @@ layout: default
 </div>
 
 <template id="card-template">
-  <div class="col mb-4">
+  <div class="col mb-4 card-col">
     <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
       <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient" style="background-size: cover; background-position: center;" aria-label="Post thumbnail"></div>
-      <div class="card-body d-flex flex-column flex-grow-1">
+      <div class="card-body d-flex flex-column flex-grow-1 overflow-auto">
         <article class="flex-grow-1">
           <a href="#" class="stretched-link title-link text-decoration-none"><h5 class="card-title fw-bold mb-2"></h5></a>
           <h6 class="card-subtitle mb-2 text-muted subtitle"></h6>
@@ -234,6 +234,19 @@ layout: default
 </script>
 
 <style>
+  /* Fix spinner text visibility */
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
   .rounded-4 { border-radius: 0.75rem !important; }
   .stretched-link::after { z-index: 1; }
   .z-index-2 { z-index: 2; position: relative; }
@@ -288,7 +301,23 @@ layout: default
     } 
   }
   
-  /* Ensure cards fill equal height and columns have consistent bottom spacing */
+  /* Make cards square on desktop (1:1 aspect ratio) */
+  @media (min-width: 992px) {
+    .card-col {
+      aspect-ratio: 1 / 1;
+    }
+    .card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-body {
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+  }
+
+  /* Ensure cards fill equal height on smaller screens */
   .card {
     display: flex;
     flex-direction: column;
