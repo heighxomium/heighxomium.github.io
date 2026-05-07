@@ -25,7 +25,7 @@ layout: default
   <div class="col mb-4 card-col">
     <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
       <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img chulapa-gradient" style="background-size: cover; background-position: center;" aria-label="Post thumbnail"></div>
-      <div class="card-body d-flex flex-column flex-grow-1 overflow-auto">
+      <div class="card-body d-flex flex-column flex-grow-1 overflow-auto position-relative">
         <article class="flex-grow-1">
           <a href="#" class="stretched-link title-link text-decoration-none"><h5 class="card-title fw-bold mb-2"></h5></a>
           <h6 class="card-subtitle mb-2 text-muted subtitle"></h6>
@@ -114,6 +114,13 @@ layout: default
     const template = document.getElementById('card-template');
     const clone = template.content.cloneNode(true);
     
+    // Get card element for background image (desktop use)
+    const card = clone.querySelector('.card');
+    
+    // Set custom property for background image (desktop) - fallback to a subtle gradient if no image
+    const bgImage = post.og_image ? `url('${escapeHtml(post.og_image)}')` : 'linear-gradient(135deg, #2c3e50, #3498db)';
+    card.style.setProperty('--card-bg-image', bgImage);
+    
     const titleLink = clone.querySelector('.title-link');
     titleLink.href = post.url;
     titleLink.querySelector('.card-title').textContent = post.title;
@@ -134,12 +141,13 @@ layout: default
       dateEl.parentElement.style.display = 'none';
     }
     
-    const imageCol = clone.querySelector('.chulapa-card-img');
+    // For mobile/tablet: set image on the separate .chulapa-card-img div
+    const imageDiv = clone.querySelector('.chulapa-card-img');
     if (post.og_image) {
-      imageCol.style.backgroundImage = `url('${escapeHtml(post.og_image)}')`;
-      imageCol.classList.remove('d-none');
+      imageDiv.style.backgroundImage = `url('${escapeHtml(post.og_image)}')`;
+      imageDiv.classList.remove('d-none');
     } else {
-      imageCol.classList.add('d-none');
+      imageDiv.classList.add('d-none');
     }
     
     const catContainer = clone.querySelector('.categories-badges');
@@ -303,7 +311,7 @@ layout: default
     } 
   }
   
-  /* --- Square cards on desktop (≥992px) with 2 columns and full content visibility --- */
+  /* --- DESKTOP STYLES (≥992px): Full-card background images --- */
   @media (min-width: 992px) {
     .card-col {
       aspect-ratio: 1 / 1;
@@ -312,36 +320,101 @@ layout: default
       height: 100%;
       display: flex;
       flex-direction: column;
-    }
-    /* Image container: take at most 40% of card height, never shrinks */
-    .chulapa-card-img {
-      flex-shrink: 0;
-      min-height: 0;
-      max-height: 40%;
       background-size: cover;
       background-position: center;
+      background-image: var(--card-bg-image, linear-gradient(135deg, #2c3e50, #3498db));
+      position: relative;
     }
-    /* Card body: fill remaining space, scroll only if needed */
+    /* Dark overlay for text readability */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
+      border-radius: inherit;
+      z-index: 0;
+    }
+    /* Hide the separate image div */
+    .chulapa-card-img {
+      display: none !important;
+    }
+    /* Card body styles for desktop: light text and relative stacking */
     .card-body {
+      position: relative;
+      z-index: 1;
+      color: #fff;
+      background: transparent;
       flex-grow: 1;
       overflow-y: auto;
       scrollbar-width: thin;
     }
-    /* Custom scrollbar styling (optional) */
+    /* Adjust text colors for contrast */
+    .card-title, .subtitle, .excerpt, .date, .categories-badges .badge, .tags-badges .badge {
+      color: #fff !important;
+    }
+    .card-title a {
+      color: #fff !important;
+    }
+    .subtitle {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+    .excerpt {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+    .border-top {
+      border-top-color: rgba(255, 255, 255, 0.3) !important;
+    }
+    .badge {
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+    }
+    .chulapa-pill-bg-secondary {
+      background-color: rgba(108, 117, 125, 0.8);
+    }
+    .chulapa-pill-bg-primary {
+      background-color: rgba(13, 110, 253, 0.8);
+    }
+    /* Custom scrollbar for card body */
     .card-body::-webkit-scrollbar {
       width: 6px;
     }
     .card-body::-webkit-scrollbar-track {
-      background: #f1f1f1;
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 10px;
     }
     .card-body::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
+      background: rgba(255, 255, 255, 0.5);
       border-radius: 10px;
     }
   }
 
-  /* Default (mobile/tablet) – no square constraint, natural height */
+  /* --- MOBILE/TABLET STYLES (below 992px): Original image-top layout --- */
+  @media (max-width: 991.98px) {
+    .card {
+      background-image: none !important;
+    }
+    .card::before {
+      display: none;
+    }
+    .card-body {
+      color: inherit;
+      background: inherit;
+    }
+    .card-title, .subtitle, .excerpt, .date, .badge {
+      color: inherit !important;
+    }
+    .border-top {
+      border-top-color: #dee2e6 !important;
+    }
+    .chulapa-card-img {
+      display: block !important;
+    }
+  }
+
+  /* Default (all screen sizes) */
   .card {
     display: flex;
     flex-direction: column;
