@@ -4,7 +4,7 @@ layout: default
 {{ content }}
 
 <div class="container px-lg-3">
-  <div id="posts-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <div id="posts-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
     <!-- Initial loading spinner -->
     <div class="col-12 text-center py-5" id="initial-spinner">
       <div class="spinner-border text-primary" role="status">
@@ -53,7 +53,9 @@ layout: default
 
   // Helper: get posts per page based on screen width
   function getPostsPerPage() {
-    return window.innerWidth >= 992 ? 15 : 10;
+    // Desktop (≥992px) : 12 posts (2 columns × 6 rows)
+    // Mobile/tablet : 10 posts
+    return window.innerWidth >= 992 ? 12 : 10;
   }
 
   let currentPage = 1;
@@ -301,7 +303,7 @@ layout: default
     } 
   }
   
-  /* Make cards square on desktop (1:1 aspect ratio) */
+  /* --- Square cards on desktop (≥992px) with 2 columns and full content visibility --- */
   @media (min-width: 992px) {
     .card-col {
       aspect-ratio: 1 / 1;
@@ -311,13 +313,35 @@ layout: default
       display: flex;
       flex-direction: column;
     }
+    /* Image container: take at most 40% of card height, never shrinks */
+    .chulapa-card-img {
+      flex-shrink: 0;
+      min-height: 0;
+      max-height: 40%;
+      background-size: cover;
+      background-position: center;
+    }
+    /* Card body: fill remaining space, scroll only if needed */
     .card-body {
+      flex-grow: 1;
       overflow-y: auto;
       scrollbar-width: thin;
     }
+    /* Custom scrollbar styling (optional) */
+    .card-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .card-body::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    .card-body::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
   }
 
-  /* Ensure cards fill equal height on smaller screens */
+  /* Default (mobile/tablet) – no square constraint, natural height */
   .card {
     display: flex;
     flex-direction: column;
@@ -329,12 +353,11 @@ layout: default
     justify-content: space-between;
   }
   
-  /* Badge responsive spacing */
   .badge {
     display: inline-block;
   }
   
-  /* Additional safety – force gutter spacing on columns */
+  /* Gutter fallback */
   .row > .col,
   .row > [class*="col-"] {
     margin-bottom: 1rem;
