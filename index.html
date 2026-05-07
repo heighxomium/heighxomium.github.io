@@ -23,7 +23,7 @@ include_on_search : false
   --radius-xl:   1.75rem;
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════��═══════════════
    KEYFRAMES
 ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp {
@@ -360,8 +360,9 @@ include_on_search : false
 
 .info-panel-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto 1fr;
   gap: 0;
+  align-items: stretch;
 }
 
 .info-panel-divider {
@@ -393,6 +394,7 @@ include_on_search : false
   align-items: center;
   justify-content: center;
   text-align: center;
+  white-space: nowrap;
 }
 
 .stats-grid {
@@ -400,14 +402,13 @@ include_on_search : false
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
   margin-bottom: 1.5rem;
-  width: 100%;
-  max-width: 400px;
   text-align: center;
 }
 
 .stat-column {
   padding: 1rem;
   border-right: 1px solid var(--border-sub);
+  white-space: nowrap;
 }
 
 .stat-column:last-child {
@@ -447,6 +448,9 @@ include_on_search : false
 
 .info-panel-section {
   padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .how-intro {
@@ -643,14 +647,15 @@ include_on_search : false
 
   .stats-section {
     padding: 1.5rem;
+    white-space: normal;
   }
 
   .info-panel-section {
     padding: 1.5rem;
   }
 
-  .stats-grid {
-    max-width: 100%;
+  .stat-column {
+    white-space: normal;
   }
 
   .features-grid {
