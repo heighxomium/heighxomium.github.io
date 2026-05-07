@@ -12,7 +12,6 @@ layout: default
     </div>
   </div>
 
-  <!-- aria-live so screen readers announce button swaps -->
   <div id="loadmore-container"
        class="d-flex justify-content-center mt-5 mb-5"
        style="display:none;"
@@ -27,15 +26,17 @@ layout: default
 </div>
 
 <template id="card-template">
-  <!-- mb-4 removed: .g-4 on the row already provides the correct gutter -->
   <div class="col card-col">
-    <div class="card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
-      <!-- role="img" + dynamic aria-label set in JS -->
+    <!--
+      FIX E: added "post-card" class so all post-specific CSS rules are scoped
+      to this component only and never bleed into other Bootstrap cards.
+    -->
+    <div class="card post-card chulapa-border-card-index rounded-4 shadow-sm h-100 position-relative overflow-hidden hover-lift">
       <div class="chulapa-min-h-10 chulapa-card-img chulapa-overlay-img"
            style="background-size:cover;background-position:center;"
            role="img"
            aria-label="Post thumbnail"></div>
-      <div class="card-body d-flex flex-column flex-grow-1 overflow-auto position-relative">
+      <div class="card-body d-flex flex-column flex-grow-1 position-relative">
         <article class="flex-grow-1">
           <a href="#" class="stretched-link title-link text-decoration-none">
             <h5 class="card-title fw-bold mb-2"></h5>
@@ -44,7 +45,6 @@ layout: default
           <div class="card-text mb-3 excerpt text-secondary small"></div>
         </article>
         <div class="border-top pt-3 mt-auto">
-          <!-- date is its own <p>; hiding it no longer nukes the badge rows -->
           <p class="small text-end fst-italic mb-2 date"></p>
           <div class="categories-badges mb-2"></div>
           <div class="tags-badges"></div>
@@ -63,7 +63,7 @@ layout: default
   const POSTS_PER_PAGE_MOBILE  = 10;
   const BREAKPOINT_LG          = 992;
 
-  // ── DOM REFS ────────────────────────────────────────────────────────────
+  // ── DOM REFS ───────────────────────────────────────────────────────────
   const cardTemplate      = document.getElementById('card-template');
   const container         = document.getElementById('posts-container');
   const loadmoreContainer = document.getElementById('loadmore-container');
@@ -71,17 +71,14 @@ layout: default
   const btnSpinner        = document.getElementById('loadmore-spinner');
   const initialSpinner    = document.getElementById('initial-spinner');
 
-  // ── STATE ───────────────────────────────────────────────────────────────
-  // FIX #2 & #7: replace currentPage*perPage arithmetic with a flat counter.
-  // renderedCount is viewport-agnostic: resize never misaligns the next batch.
+  // ── STATE ──────────────────────────────────────────────────────────────
   let renderedCount       = 0;
   let currentPostsPerPage = getPostsPerPage();
   let isLoading           = false;
 
-  // ── LIQUID DATA ─────────────────────────────────────────────────────────
-  // FIX #1: the console.warn for a missing collection MUST live here, outside
-  // the array literal.  Inside the literal it becomes a call-expression that
-  // evaluates to `undefined`, silently prepending a corrupt element to the array.
+  // ── LIQUID DATA ────────────────────────────────────────────────────────
+  // The console.warn lives here, OUTSIDE the array literal, so it cannot
+  // be evaluated as an array element expression → [undefined, post, …].
   {%- assign collection = site[page.include_collection] -%}
   {%- unless collection %}
   console.warn("indexcategory: collection '{{ page.include_collection }}' not found.");
@@ -137,7 +134,7 @@ layout: default
 
   const totalPosts = allPosts.length;
 
-  // ── UTILITIES ───────────────────────────────────────────────────────────
+  // ── UTILITIES ──────────────────────────────────────────────────────────
 
   function getPostsPerPage() {
     return window.innerWidth >= BREAKPOINT_LG
@@ -146,19 +143,15 @@ layout: default
   }
 
   /**
-   * FIX #4: Escape characters unsafe inside a CSS url("…") string.
-   * Per the CSS spec only U+0022 (") and U+005C (\) need escaping inside
-   * a double-quoted url token.  escapeHtml is WRONG here — &amp; inside
-   * url("...") corrupts the URL rather than protecting it.
+   * Escape for use inside a CSS url("…") double-quoted string.
+   * Only " and \ need escaping per the CSS spec.
+   * DO NOT use escapeHtml here — &amp; inside url() corrupts the URL.
    */
   function cssUrlEscape(url) {
     return url.replace(/["\\]/g, ch => (ch === '\\' ? '\\\\' : '\\"'));
   }
 
-  /**
-   * FIX #6: Full set of HTML special characters including quotes.
-   * Original missed " and ' — incomplete XSS protection for attribute contexts.
-   */
+  /** Full HTML escaping including quotes for safe attribute + text insertion. */
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, ch => (
@@ -174,12 +167,11 @@ layout: default
     };
   }
 
-  /** Idempotent: safe to call after the node has already been removed. */
   function removeInitialSpinner() {
     if (initialSpinner && initialSpinner.parentNode) initialSpinner.remove();
   }
 
-  // ── UI HELPERS ──────────────────────────────────────────────────────────
+  // ── UI HELPERS ─────────────────────────────────────────────────────────
 
   function showEmptyState() {
     removeInitialSpinner();
@@ -193,7 +185,7 @@ layout: default
     removeInitialSpinner();
     const el = document.createElement('div');
     el.className = 'col-12 text-center py-5 alert alert-danger';
-    el.textContent = 'Error loading posts: ' + msg; // textContent prevents XSS
+    el.textContent = 'Error loading posts: ' + msg;
     container.appendChild(el);
   }
 
@@ -203,10 +195,10 @@ layout: default
   }
 
   /**
-   * Swap "Load more" for "Back to top" inside loadmoreContainer.
-   * FIX #3 & #9: does NOT touch container visibility — that is the caller's
-   * responsibility.  Uses a scoped querySelector instead of a global ID so
-   * the selector cannot collide with other page elements.
+   * Swap "Load more" for "Back to top".
+   * FIX F: explicitly moves keyboard focus to the new button (with preventScroll
+   * so the viewport doesn't jump) — without this, focus silently drops to <body>
+   * when the load-more button's DOM node is destroyed, stranding keyboard users.
    */
   function replaceWithBackToTop() {
     if (!loadmoreContainer) return;
@@ -215,11 +207,13 @@ layout: default
               aria-label="Scroll back to top">
         <i class="fas fa-arrow-up me-2" aria-hidden="true"></i>Back to top
       </button>`;
-    loadmoreContainer.querySelector('button')
-      ?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    const btn = loadmoreContainer.querySelector('button');
+    btn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    // FIX F: restore focus so keyboard and screen-reader users are not abandoned.
+    btn?.focus({ preventScroll: true });
   }
 
-  // ── RENDERING ───────────────────────────────────────────────────────────
+  // ── RENDERING ──────────────────────────────────────────────────────────
 
   function renderPost(post) {
     const clone    = cardTemplate.content.cloneNode(true);
@@ -228,7 +222,6 @@ layout: default
     const hasImage = typeof post.og_image === 'string' && post.og_image.length > 0;
 
     // Desktop: card background via CSS custom property.
-    // cssUrlEscape is mandatory here — escapeHtml would corrupt the URL.
     card.style.setProperty(
       '--card-bg-image',
       hasImage
@@ -236,13 +229,23 @@ layout: default
         : 'linear-gradient(135deg, #2c3e50, #3498db)'
     );
 
-    // Mobile: dedicated image div (hidden on desktop via CSS).
     if (hasImage) {
-      // FIX #4: cssUrlEscape, not escapeHtml, for CSS url() values.
+      // Mobile: background on the dedicated image div.
+      // cssUrlEscape is mandatory — escapeHtml would produce &amp; inside url().
       imageDiv.style.backgroundImage = `url("${cssUrlEscape(post.og_image)}")`;
       imageDiv.setAttribute('aria-label', escapeHtml(post.title || '') + ' thumbnail');
     } else {
-      imageDiv.hidden = true;
+      /**
+       * FIX A: CRITICAL — was `imageDiv.hidden = true`.
+       *
+       * The mobile media query sets `.chulapa-card-img { display: block !important }`.
+       * The browser's default `[hidden] { display: none }` carries NO !important,
+       * so it loses the specificity battle — the image div stayed visible as a
+       * blank 12rem strip on every post without a cover image.
+       *
+       * Bootstrap's `.d-none` resolves to `display: none !important`, which wins.
+       */
+      imageDiv.classList.add('d-none');
     }
 
     // Title + link
@@ -255,25 +258,22 @@ layout: default
     if (post.subtitle) {
       subtitleEl.textContent = post.subtitle;
     } else {
-      subtitleEl.hidden = true;
+      subtitleEl.hidden = true; // No !important conflict: .subtitle has no display rule
     }
 
     // Excerpt
     clone.querySelector('.excerpt').textContent = post.excerpt || '';
 
-    // FIX #5: hide only the <p class="date">, not its parent .border-top.
-    // The original hid the entire footer strip, destroying categories + tags.
+    // Date — hide only the <p>, not the parent .border-top (which holds badges)
     const dateEl = clone.querySelector('.date');
     if (post.date) {
       const safe = escapeHtml(post.date);
-      // Note: datetime should ideally be ISO-8601 (YYYY-MM-DD) for machine
-      // readability.  Requires a second Liquid date format pass if desired.
       dateEl.innerHTML =
         `<time datetime="${safe}">` +
         `<i class="far fa-calendar-alt me-1" aria-hidden="true"></i>${safe}` +
         `</time>`;
     } else {
-      dateEl.hidden = true;
+      dateEl.hidden = true; // No !important conflict: .date has no display rule
     }
 
     // Category badges
@@ -299,15 +299,13 @@ layout: default
     return clone;
   }
 
-  // ── LOAD MORE ───────────────────────────────────────────────────────────
+  // ── LOAD MORE ──────────────────────────────────────────────────────────
 
   function loadMorePosts() {
     if (isLoading) return;
     isLoading = true;
     setButtonLoading(true);
 
-    // FIX #2: slice directly from renderedCount — no page × perPage arithmetic,
-    // no off-by-one, immune to perPage changes between calls (FIX #7).
     const batch = allPosts.slice(renderedCount, renderedCount + currentPostsPerPage);
 
     const fragment = document.createDocumentFragment();
@@ -318,47 +316,40 @@ layout: default
         console.error('Failed to render post:', err, post);
       }
     }
-    container.appendChild(fragment); // single reflow
+    container.appendChild(fragment);
     removeInitialSpinner();
 
     renderedCount += batch.length;
     isLoading = false;
     setButtonLoading(false);
 
-    // FIX #3: only swap in back-to-top when the container is already visible,
-    // meaning the user triggered at least one extra load beyond the first page.
-    // When called from init() the container is still display:none, so this
-    // branch is correctly skipped and the container stays hidden.
+    // Replace load-more with back-to-top only when the container is already
+    // visible (i.e. at least one user-triggered load occurred). During init's
+    // first load the container is still display:none, so this branch is skipped
+    // and the container stays hidden when all posts fit on a single page.
     if (renderedCount >= totalPosts && loadmoreContainer.style.display !== 'none') {
       replaceWithBackToTop();
     }
   }
 
-  // ── INIT ────────────────────────────────────────────────────────────────
+  // ── INIT ───────────────────────────────────────────────────────────────
 
   function init() {
-    if (!cardTemplate)      { showError('Card template element missing.');    return; }
-    if (!container)         { console.error('Posts container missing.');      return; }
-    if (!loadmoreContainer) { console.error('Load-more container missing.');  return; }
-    if (totalPosts === 0)   { showEmptyState();                               return; }
+    if (!cardTemplate)      { showError('Card template element missing.');   return; }
+    if (!container)         { console.error('Posts container missing.');     return; }
+    if (!loadmoreContainer) { console.error('Load-more container missing.'); return; }
+    if (totalPosts === 0)   { showEmptyState();                              return; }
 
     currentPostsPerPage = getPostsPerPage();
-
-    // First load runs with loadmoreContainer at display:none (set in HTML).
-    // This intentionally prevents replaceWithBackToTop from firing when all
-    // posts fit in one page — there is nothing to scroll back to.
     loadMorePosts();
 
-    // Only reveal the load-more button if posts remain after the first batch.
     if (renderedCount < totalPosts) {
       loadmoreContainer.style.display = 'flex';
       loadmoreBtn?.addEventListener('click', loadMorePosts);
     }
   }
 
-  // FIX #7: renderedCount is viewport-agnostic; updating perPage is enough.
-  // The next click will simply continue from the correct offset regardless of
-  // how many times the user resizes.
+  // renderedCount is viewport-agnostic; updating perPage alone is sufficient.
   window.addEventListener('resize', debounce(() => {
     currentPostsPerPage = getPostsPerPage();
   }, 200));
@@ -372,7 +363,7 @@ layout: default
 </script>
 
 <style>
-  /* ── GLOBAL ──────────────────────────────────────────────────────────── */
+  /* ── GLOBAL UTILITIES ───────────────────────────────────────────────── */
   .visually-hidden {
     position: absolute !important;
     width: 1px !important; height: 1px !important;
@@ -385,22 +376,39 @@ layout: default
 
   .rounded-4 { border-radius: 0.75rem !important; }
 
-  /* ── CARD ────────────────────────────────────────────────────────────── */
-  .card {
+  /* ── POST CARD ──────────────────────────────────────────────────────────
+     FIX E: Every rule that was on the global `.card` selector and only
+     applies to post-index cards is now scoped to `.post-card`.  This
+     prevents bleed into any other Bootstrap card component on the page.
+  ─────────────────────────────────────────────────────────────────────── */
+  .post-card {
     border-radius: 0.75rem;
-    overflow: hidden;             /* clips child content to the rounded corners  */
-    background-clip: padding-box; /* prevents background from bleeding past border */
-    /* FIX #8: removed transform:translateZ(0), backface-visibility:hidden,
-       and will-change:transform — GPU-promotion hints have real memory cost
-       and are unnecessary for a simple translateY hover on static cards.     */
+    overflow: hidden;             /* clips children to the rounded corners      */
+    background-clip: padding-box; /* prevents background bleeding past border   */
+
+    /*
+     * isolation:isolate creates a self-contained stacking context so the
+     * z-index ladder (::before=0, card-body=1, badges=2) is local to each
+     * card and cannot interfere with the rest of the page.  It also
+     * mitigates the Safari ≤14 overflow+border-radius clipping bug without
+     * the GPU memory cost of transform:translateZ(0).
+     */
+    isolation: isolate;
   }
 
-  /* Dark overlay (desktop only — enabled in @media below) */
-  .card::before {
+  /* Dark overlay pseudo-element (activated on desktop — see @media below) */
+  .post-card::before {
     content: '';
-    position: absolute; inset: 0;
-    /* Explicit radius must match .card exactly to prevent subpixel bleed in
-       Safari when overflow:hidden and border-radius interact with compositing. */
+    position: absolute;
+    /* FIX B: explicit properties instead of `inset` shorthand.
+       `inset` is unsupported in Safari < 14.1; the overlay disappeared
+       entirely on those versions, leaving unreadable text on bg images. */
+    top: 0; right: 0; bottom: 0; left: 0;
+    /*
+     * Border-radius must match .post-card exactly.  Without it, Safari's
+     * compositing engine renders a 1px subpixel bleed at the card corners
+     * where the overlay and the card border-radius don't align.
+     */
     border-radius: 0.75rem;
     pointer-events: none;
   }
@@ -410,16 +418,13 @@ layout: default
     overflow: hidden;
   }
 
-  /* ── HOVER LIFT ──────────────────────────────────────────────────────── */
+  /* ── HOVER LIFT ────────────────────────────────────────────────────── */
   .hover-lift {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   }
   .hover-lift:hover { transform: translateY(-4px); }
 
-  /* ── BUTTONS ─────────────────────────────────────────────────────────── */
-  /* FIX #9: class-based selector replaces the #backToTopBtn ID selector.
-     The back-to-top button is created dynamically; an ID selector worked
-     only by luck and would break if the ID was ever reused on the page.  */
+  /* ── BUTTON ACTIONS ────────────────────────────────────────────────── */
   .btn-action {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
@@ -429,85 +434,106 @@ layout: default
   }
   .btn-action:active { transform: none; }
 
-  /* ── IMAGE HEIGHTS ───────────────────────────────────────────────────── */
+  /* ── IMAGE DIV HEIGHTS ─────────────────────────────────────────────── */
   .chulapa-min-h-10 { min-height: 12rem; }
   @media (min-width: 576px) { .chulapa-min-h-10 { min-height: 10rem; } }
 
-  /* ── Z-INDEX ─────────────────────────────────────────────────────────── */
+  /* ── Z-INDEX ───────────────────────────────────────────────────────── */
   .stretched-link::after { z-index: 1; }
   .z-index-2 { z-index: 2; position: relative; }
 
-  /* ── CARD BODY LAYOUT ────────────────────────────────────────────────── */
-  .card-body {
+  /* ── CARD BODY LAYOUT (both viewports) ─────────────────────────────── */
+  .post-card .card-body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
 
-  /* ── DESKTOP (≥992px) ────────────────────────────────────────────────── */
+  /* ── DESKTOP (≥992px) ──────────────────────────────────────────────── */
   @media (min-width: 992px) {
     .card-col { aspect-ratio: 1 / 1; }
 
-    .card {
+    .post-card {
       background-size: cover;
       background-position: center;
       background-image: var(--card-bg-image, linear-gradient(135deg, #2c3e50, #3498db));
     }
-    .card::before {
+    .post-card::before {
       background: rgba(0,0,0,.55);
       z-index: 0;
     }
-    .chulapa-card-img { display: none !important; }
+    /* Image div is redundant on desktop — the card background IS the image */
+    .post-card .chulapa-card-img { display: none !important; }
 
-    .card-body {
-      position: relative; z-index: 1;
+    .post-card .card-body {
+      position: relative;
+      z-index: 1;
       color: #fff;
       background: transparent;
       overflow-y: auto;
       scrollbar-width: thin;
+      /*
+       * FIX D: prevents a 6px content reflow when the scrollbar appears.
+       * Without this, text inside the card shifts horizontally every time
+       * a card becomes tall enough to need scrolling (e.g. on hover-lift
+       * revealing more content).
+       */
+      scrollbar-gutter: stable;
     }
-    .card-body::-webkit-scrollbar       { width: 6px; }
-    .card-body::-webkit-scrollbar-track { background: rgba(255,255,255,.2); border-radius: 10px; }
-    .card-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.5); border-radius: 10px; }
 
-    .card-title, .subtitle, .excerpt, .date { color: #fff !important; }
-    .card-title a                           { color: #fff !important; }
-    .subtitle                               { color: rgba(255,255,255,.8) !important; }
-    .excerpt                                { color: rgba(255,255,255,.9) !important; }
-    .border-top                             { border-top-color: rgba(255,255,255,.3) !important; }
-    .categories-badges .badge,
-    .tags-badges .badge                     { color: #fff !important; }
+    /*
+     * FIX C: scoped to `.post-card .card-body` instead of the global
+     * `.card-body` selector.  The original rule styled the scrollbar of
+     * every Bootstrap card-body on the entire page.
+     */
+    .post-card .card-body::-webkit-scrollbar       { width: 6px; }
+    .post-card .card-body::-webkit-scrollbar-track { background: rgba(255,255,255,.2); border-radius: 10px; }
+    .post-card .card-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.5); border-radius: 10px; }
 
-    .badge {
+    .post-card .card-title,
+    .post-card .subtitle,
+    .post-card .excerpt,
+    .post-card .date             { color: #fff !important; }
+    .post-card .card-title a     { color: #fff !important; }
+    .post-card .subtitle         { color: rgba(255,255,255,.8) !important; }
+    .post-card .excerpt          { color: rgba(255,255,255,.9) !important; }
+    .post-card .border-top       { border-top-color: rgba(255,255,255,.3) !important; }
+    .post-card .categories-badges .badge,
+    .post-card .tags-badges .badge { color: #fff !important; }
+
+    .post-card .badge {
       display: inline-block;
       background-color: rgba(0,0,0,.6);
       backdrop-filter: blur(2px);
     }
-    .chulapa-pill-bg-secondary { background-color: rgba(108,117,125,.8); }
-    .chulapa-pill-bg-primary   { background-color: rgba(13,110,253,.8);  }
+    .post-card .chulapa-pill-bg-secondary { background-color: rgba(108,117,125,.8); }
+    .post-card .chulapa-pill-bg-primary   { background-color: rgba(13,110,253,.8);  }
   }
 
-  /* ── MOBILE / TABLET (<992px) ────────────────────────────────────────── */
+  /* ── MOBILE / TABLET (<992px) ──────────────────────────────────────── */
   @media (max-width: 991.98px) {
-    /* Suppress the CSS custom property on mobile so the gradient fallback
-       doesn't bleed through on cards without a real image.                  */
-    .card { background-image: none !important; }
-    .card::before { display: none; }
+    /*
+     * FIX E: was `.card { background-image: none !important }` — scoped to
+     * `.post-card` so no other Bootstrap card on the page is affected.
+     */
+    .post-card { background-image: none !important; }
+    .post-card::before { display: none; }
 
-    .card-body {
+    .post-card .card-body {
       color: inherit;
       background: inherit;
       border-radius: 0 0 0.75rem 0.75rem;
     }
-    .card-title, .subtitle, .excerpt, .date, .badge { color: inherit !important; }
-    .border-top { border-top-color: #dee2e6 !important; }
-    .chulapa-card-img {
+    .post-card .card-title,
+    .post-card .subtitle,
+    .post-card .excerpt,
+    .post-card .date,
+    .post-card .badge  { color: inherit !important; }
+    .post-card .border-top { border-top-color: #dee2e6 !important; }
+
+    .post-card .chulapa-card-img {
       display: block !important;
       border-radius: 0.75rem 0.75rem 0 0;
     }
-
-    /* FIX #10: removed .row>[class*=col] margin-bottom overrides.
-       Bootstrap's .g-4 (gap: 1.5rem) already provides correct gutters.
-       These rules were double-spacing the grid on mobile.                   */
   }
 </style>
