@@ -42,6 +42,23 @@ layout: default
 </template>
 
 <script>
+  // [PERF] Constants
+  const POSTS_PER_PAGE_DESKTOP = 12;
+  const POSTS_PER_PAGE_MOBILE = 10;
+  const BREAKPOINT_LG = 992;
+  
+  // [PERF] Cached DOM elements
+  const cardTemplate = document.getElementById('card-template');
+  const container = document.getElementById('posts-container');
+  const loadmoreContainer = document.getElementById('loadmore-container');
+  const loadmoreBtn = document.getElementById('loadmore-btn');
+  const btnSpinner = document.getElementById('loadmore-spinner');
+  const initialSpinner = document.getElementById('initial-spinner');
+  
+  let currentPage = 1;
+  let currentPostsPerPage = getPostsPerPage();
+  let isLoading = false;
+
   // Helper: Debounce function
   function debounce(func, wait) {
     let timeout;
@@ -51,18 +68,29 @@ layout: default
     };
   }
 
-  // Helper: get posts per page based on screen width
+  // Helper: posts per page based on screen width
   function getPostsPerPage() {
-    // Desktop (≥992px) : 12 posts (2 columns × 6 rows)
-    // Mobile/tablet : 10 posts
-    return window.innerWidth >= 992 ? 12 : 10;
+    return window.innerWidth >= BREAKPOINT_LG ? POSTS_PER_PAGE_DESKTOP : POSTS_PER_PAGE_MOBILE;
   }
 
-  let currentPage = 1;
-  let currentPostsPerPage = getPostsPerPage();
-  let isLoading = false;
+  // [SEC] Proper CSS string escaping for url()
+  function cssUrlEscape(str) {
+    if (!str) return '';
+    // Encode problematic characters for CSS url().
+    // Replace backslash, quotes, parentheses, and whitespace.
+    return str.replace(/[\\"\'()\s]/g, function(match) {
+      return '\\' + match.charCodeAt(0).toString(16) + ' ';
+    });
+  }
+
+  // [SEC] HTML escape (for text content inside attributes)
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+  }
 
   // Embedded posts data (escaped for safety)
+  // [PERF] Liquid-generated JSON – unchanged
   const allPosts = [
     {% assign collection = site[page.include_collection] %}
     {% if page.category_name %}
@@ -98,27 +126,19 @@ layout: default
 
   const totalPosts = allPosts.length;
 
-  // DOM elements
-  const container = document.getElementById('posts-container');
-  const loadmoreContainer = document.getElementById('loadmore-container');
-  const loadmoreBtn = document.getElementById('loadmore-btn');
-  const btnSpinner = document.getElementById('loadmore-spinner');
-  const initialSpinner = document.getElementById('initial-spinner');
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-  }
-
   function renderPost(post) {
-    const template = document.getElementById('card-template');
-    const clone = template.content.cloneNode(true);
+    // [PERF] Use cached template
+    const clone = cardTemplate.content.cloneNode(true);
     
-    // Get card element for background image (desktop use)
     const card = clone.querySelector('.card');
-    
-    // Set custom property for background image (desktop) - fallback to a subtle gradient if no image
-    const bgImage = post.og_image ? `url('${escapeHtml(post.og_image)}')` : 'linear-gradient(135deg, #2c3e50, #3498db)';
+    // [SEC] Safe CSS background image using proper escaping
+    let bgImage;
+    if (post.og_image) {
+      const escapedUrl = cssUrlEscape(post.og_image);
+      bgImage = `url("${escapedUrl}")`;
+    } else {
+      bgImage = 'linear-gradient(135deg, #2c3e50, #3498db)';
+    }
     card.style.setProperty('--card-bg-image', bgImage);
     
     const titleLink = clone.querySelector('.title-link');
@@ -136,15 +156,17 @@ layout: default
     
     const dateEl = clone.querySelector('.date');
     if (post.date) {
-      dateEl.innerHTML = `<time datetime="${escapeHtml(post.date)}"><i class="far fa-calendar-alt me-1"></i>${escapeHtml(post.date)}</time>`;
+      const safeDate = escapeHtml(post.date);
+      dateEl.innerHTML = `<time datetime="${safeDate}"><i class="far fa-calendar-alt me-1"></i>${safeDate}</time>`;
     } else {
       dateEl.parentElement.style.display = 'none';
     }
     
-    // For mobile/tablet: set image on the separate .chulapa-card-img div
+    // Mobile/tablet image
     const imageDiv = clone.querySelector('.chulapa-card-img');
     if (post.og_image) {
-      imageDiv.style.backgroundImage = `url('${escapeHtml(post.og_image)}')`;
+      const escapedUrl = cssUrlEscape(post.og_image);
+      imageDiv.style.backgroundImage = `url("${escapedUrl}")`;
       imageDiv.classList.remove('d-none');
     } else {
       imageDiv.classList.add('d-none');
@@ -152,27 +174,40 @@ layout: default
     
     const catContainer = clone.querySelector('.categories-badges');
     if (post.categories?.length) {
-      post.categories.forEach(cat => {
+      for (const cat of post.categories) { // [PERF] faster than forEach
         const badge = document.createElement('a');
         badge.href = cat.url;
         badge.className = 'badge chulapa-pill-bg-secondary me-1 mb-1 z-index-2';
         badge.textContent = cat.name;
         catContainer.appendChild(badge);
-      });
+      }
     }
     
     const tagContainer = clone.querySelector('.tags-badges');
     if (post.tags?.length) {
-      post.tags.forEach(tag => {
+      for (const tag of post.tags) {
         const badge = document.createElement('a');
         badge.href = tag.url;
         badge.className = 'badge chulapa-pill-bg-primary me-1 mb-1 z-index-2';
         badge.textContent = tag.name;
         tagContainer.appendChild(badge);
-      });
+      }
     }
     
     return clone;
+  }
+
+  function replaceWithBackToTop() {
+    if (!loadmoreContainer) return;
+    // [PERF] Replace content once
+    loadmoreContainer.innerHTML = `
+      <button id="backToTopBtn" class="btn btn-secondary btn-lg px-5 py-2 rounded-4 shadow-sm transition-transform">
+        <i class="fas fa-arrow-up me-2"></i> Back to top
+      </button>
+    `;
+    document.getElementById('backToTopBtn')?.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   function loadMorePosts() {
@@ -194,35 +229,24 @@ layout: default
       return;
     }
     
-    setTimeout(() => {
-      if (initialSpinner) initialSpinner.remove();
-      
-      const fragment = document.createDocumentFragment();
-      postsToLoad.forEach(post => fragment.appendChild(renderPost(post)));
-      container.appendChild(fragment);
-      
-      currentPage++;
-      isLoading = false;
-      
-      if (btnSpinner) btnSpinner.classList.add('d-none');
-      if (loadmoreBtn) loadmoreBtn.disabled = false;
-      
-      if (currentPage * currentPostsPerPage > totalPosts) {
-        replaceWithBackToTop();
-      }
-    }, 150);
-  }
-
-  function replaceWithBackToTop() {
-    if (!loadmoreContainer) return;
-    loadmoreContainer.innerHTML = `
-      <button id="backToTopBtn" class="btn btn-secondary btn-lg px-5 py-2 rounded-4 shadow-sm transition-transform">
-        <i class="fas fa-arrow-up me-2"></i> Back to top
-      </button>
-    `;
-    document.getElementById('backToTopBtn')?.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    // [PERF] Remove artificial setTimeout – load immediately
+    if (initialSpinner) initialSpinner.remove();
+    
+    const fragment = document.createDocumentFragment();
+    for (const post of postsToLoad) {
+      fragment.appendChild(renderPost(post));
+    }
+    container.appendChild(fragment);
+    
+    currentPage++;
+    isLoading = false;
+    
+    if (btnSpinner) btnSpinner.classList.add('d-none');
+    if (loadmoreBtn) loadmoreBtn.disabled = false;
+    
+    if (currentPage * currentPostsPerPage > totalPosts) {
+      replaceWithBackToTop();
+    }
   }
 
   function init() {
@@ -244,7 +268,7 @@ layout: default
 </script>
 
 <style>
-  /* Fix spinner text visibility */
+  /* (CSS unchanged except for minor formatting – kept as original) */
   .visually-hidden {
     position: absolute !important;
     width: 1px !important;
@@ -256,66 +280,41 @@ layout: default
     white-space: nowrap !important;
     border: 0 !important;
   }
-
   .rounded-4 { border-radius: 0.75rem !important; }
   .stretched-link::after { z-index: 1; }
   .z-index-2 { z-index: 2; position: relative; }
-  
-  /* Interactions & Animations */
   .transition-transform { 
     transition: transform 0.3s ease, box-shadow 0.3s ease; 
   }
-  
   #loadmore-btn:hover, 
   #backToTopBtn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
   }
-  
   #loadmore-btn:active, 
   #backToTopBtn:active {
     transform: translateY(0);
   }
-  
   .hover-lift { 
     transition: transform 0.2s ease-in-out; 
   }
-  
   .hover-lift:hover { 
     transform: translateY(-4px); 
   }
-
   .fade-in-up {
     animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
   }
-
   @keyframes fadeInUp {
-    from { 
-      opacity: 0; 
-      transform: translateY(15px); 
-    }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
-    }
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
-  .chulapa-min-h-10 { 
-    min-height: 12rem; 
-  }
-  
+  .chulapa-min-h-10 { min-height: 12rem; }
   @media (min-width: 576px) { 
-    .chulapa-min-h-10 { 
-      min-height: 10rem; 
-    } 
+    .chulapa-min-h-10 { min-height: 10rem; } 
   }
-  
-  /* --- DESKTOP STYLES (≥992px): Full-card background images --- */
   @media (min-width: 992px) {
-    .card-col {
-      aspect-ratio: 1 / 1;
-    }
+    .card-col { aspect-ratio: 1 / 1; }
     .card {
       height: 100%;
       display: flex;
@@ -325,7 +324,6 @@ layout: default
       background-image: var(--card-bg-image, linear-gradient(135deg, #2c3e50, #3498db));
       position: relative;
     }
-    /* Dark overlay for text readability */
     .card::before {
       content: '';
       position: absolute;
@@ -337,11 +335,7 @@ layout: default
       border-radius: inherit;
       z-index: 0;
     }
-    /* Hide the separate image div */
-    .chulapa-card-img {
-      display: none !important;
-    }
-    /* Card body styles for desktop: light text and relative stacking */
+    .chulapa-card-img { display: none !important; }
     .card-body {
       position: relative;
       z-index: 1;
@@ -351,94 +345,36 @@ layout: default
       overflow-y: auto;
       scrollbar-width: thin;
     }
-    /* Adjust text colors for contrast */
     .card-title, .subtitle, .excerpt, .date, .categories-badges .badge, .tags-badges .badge {
       color: #fff !important;
     }
-    .card-title a {
-      color: #fff !important;
-    }
-    .subtitle {
-      color: rgba(255, 255, 255, 0.8) !important;
-    }
-    .excerpt {
-      color: rgba(255, 255, 255, 0.9) !important;
-    }
-    .border-top {
-      border-top-color: rgba(255, 255, 255, 0.3) !important;
-    }
+    .card-title a { color: #fff !important; }
+    .subtitle { color: rgba(255, 255, 255, 0.8) !important; }
+    .excerpt { color: rgba(255, 255, 255, 0.9) !important; }
+    .border-top { border-top-color: rgba(255, 255, 255, 0.3) !important; }
     .badge {
       background-color: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(2px);
     }
-    .chulapa-pill-bg-secondary {
-      background-color: rgba(108, 117, 125, 0.8);
-    }
-    .chulapa-pill-bg-primary {
-      background-color: rgba(13, 110, 253, 0.8);
-    }
-    /* Custom scrollbar for card body */
-    .card-body::-webkit-scrollbar {
-      width: 6px;
-    }
-    .card-body::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-    }
-    .card-body::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 10px;
-    }
+    .chulapa-pill-bg-secondary { background-color: rgba(108, 117, 125, 0.8); }
+    .chulapa-pill-bg-primary { background-color: rgba(13, 110, 253, 0.8); }
+    .card-body::-webkit-scrollbar { width: 6px; }
+    .card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    .card-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.5); border-radius: 10px; }
   }
-
-  /* --- MOBILE/TABLET STYLES (below 992px): Original image-top layout --- */
   @media (max-width: 991.98px) {
-    .card {
-      background-image: none !important;
-    }
-    .card::before {
-      display: none;
-    }
-    .card-body {
-      color: inherit;
-      background: inherit;
-    }
-    .card-title, .subtitle, .excerpt, .date, .badge {
-      color: inherit !important;
-    }
-    .border-top {
-      border-top-color: #dee2e6 !important;
-    }
-    .chulapa-card-img {
-      display: block !important;
-    }
+    .card { background-image: none !important; }
+    .card::before { display: none; }
+    .card-body { color: inherit; background: inherit; }
+    .card-title, .subtitle, .excerpt, .date, .badge { color: inherit !important; }
+    .border-top { border-top-color: #dee2e6 !important; }
+    .chulapa-card-img { display: block !important; }
   }
-
-  /* Default (all screen sizes) */
-  .card {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  
-  .badge {
-    display: inline-block;
-  }
-  
-  /* Gutter fallback */
-  .row > .col,
-  .row > [class*="col-"] {
-    margin-bottom: 1rem;
-  }
+  .card { display: flex; flex-direction: column; }
+  .card-body { display: flex; flex-direction: column; justify-content: space-between; }
+  .badge { display: inline-block; }
+  .row > .col, .row > [class*="col-"] { margin-bottom: 1rem; }
   @media (min-width: 768px) {
-    .row > .col,
-    .row > [class*="col-"] {
-      margin-bottom: 0;
-    }
+    .row > .col, .row > [class*="col-"] { margin-bottom: 0; }
   }
 </style>
