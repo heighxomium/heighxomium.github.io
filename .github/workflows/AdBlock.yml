@@ -1,0 +1,83 @@
+name: Build Combined AdBlock Filter List
+
+on:
+  schedule:
+    - cron: '0 2 * * *'          # daily at 02:00 UTC
+  workflow_dispatch:
+    inputs:
+      easyList:
+        description: 'EasyList'
+        type: boolean
+        default: true
+      uBlockDefault:
+        description: 'uBlock Origin (Default)'
+        type: boolean
+        default: true
+      uBlockQuick:
+        description: 'uBlock Origin (Quick fixes)'
+        type: boolean
+        default: true
+      uBlockUnbreak:
+        description: 'uBlock Origin (Unbreak)'
+        type: boolean
+        default: true
+      urlhaus:
+        description: 'Online Malicious URL Blocklist (URLhaus)'
+        type: boolean
+        default: true
+      ruAdList:
+        description: 'RU AdList (Classic)'
+        type: boolean
+        default: true
+      peterLowe:
+        description: "Peter Lowe's Ad server list"
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write                # needed to push back to repo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # We need to push later, so use the default token with write access
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests urllib3
+
+      - name: Build source list argument
+        id: sources
+        run: |
+          SELECTED=()
+          [[ "${{ github.event.inputs.easyList || true }}" == "true" ]] && SELECTED+=("EasyList")
+          [[ "${{ github.event.inputs.uBlockDefault || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Default)")
+          [[ "${{ github.event.inputs.uBlockQuick || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Quick fixes)")
+          [[ "${{ github.event.inputs.uBlockUnbreak || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Unbreak)")
+          [[ "${{ github.event.inputs.urlhaus || true }}" == "true" ]] && SELECTED+=("Online Malicious URL Blocklist (URLhaus)")
+          [[ "${{ github.event.inputs.ruAdList || true }}" == "true" ]] && SELECTED+=("RU AdList (Classic)")
+          [[ "${{ github.event.inputs.peterLowe || true }}" == "true" ]] && SELECTED+=("Peter Lowe's Ad server list")
+          echo "sources=${SELECTED[*]}" >> $GITHUB_OUTPUT
+
+      - name: Run filter merger script
+        run: python scripts/python.005.py --sources ${{ steps.sources.outputs.sources }}
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pages/archive/backup/output.txt
+          if git diff --cached --quiet; then
+            echo "No changes to output file."
+          else
+            git commit -m "Update combined adblock list [skip ci]"
+            git push
+          fi
