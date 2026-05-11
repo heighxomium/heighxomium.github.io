@@ -50,7 +50,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Install dependencies
         run: pip install --upgrade pip requests urllib3
@@ -73,12 +72,17 @@ jobs:
             SELECTED=("EasyList" "uBlock Origin (Default)" "uBlock Origin (Quick fixes)" "uBlock Origin (Unbreak)" "Online Malicious URL Blocklist (URLhaus)" "RU AdList (Classic)" "Peter Lowe's Ad server list")
           fi
           
-          echo "sources=${SELECTED[*]}" >> $GITHUB_OUTPUT
+          # Create a properly quoted argument string
+          ARGS=""
+          for source in "${SELECTED[@]}"; do
+            ARGS="$ARGS \"$source\""
+          done
+          echo "sources=$ARGS" >> $GITHUB_OUTPUT
           echo "Selected sources: ${SELECTED[*]}"
 
       - name: Run filter merger script
         run: |
-          python scripts/python.005.py --sources ${{ steps.sources.outputs.sources }}
+          eval "python scripts/python.005.py --sources ${{ steps.sources.outputs.sources }}"
         timeout-minutes: 15
 
       - name: Verify output file
@@ -125,3 +129,4 @@ jobs:
             LINE_COUNT=$(wc -l < pages/archive/backup/output.txt)
             echo "📊 Output file: **$LINE_COUNT** lines" >> $GITHUB_STEP_SUMMARY
           fi
+          
