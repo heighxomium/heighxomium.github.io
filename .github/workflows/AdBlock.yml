@@ -43,41 +43,85 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # We need to push later, so use the default token with write access
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
-        run: pip install requests urllib3
+        run: pip install --upgrade pip requests urllib3
 
       - name: Build source list argument
         id: sources
+        shell: bash
         run: |
           SELECTED=()
-          [[ "${{ github.event.inputs.easyList || true }}" == "true" ]] && SELECTED+=("EasyList")
-          [[ "${{ github.event.inputs.uBlockDefault || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Default)")
-          [[ "${{ github.event.inputs.uBlockQuick || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Quick fixes)")
-          [[ "${{ github.event.inputs.uBlockUnbreak || true }}" == "true" ]] && SELECTED+=("uBlock Origin (Unbreak)")
-          [[ "${{ github.event.inputs.urlhaus || true }}" == "true" ]] && SELECTED+=("Online Malicious URL Blocklist (URLhaus)")
-          [[ "${{ github.event.inputs.ruAdList || true }}" == "true" ]] && SELECTED+=("RU AdList (Classic)")
-          [[ "${{ github.event.inputs.peterLowe || true }}" == "true" ]] && SELECTED+=("Peter Lowe's Ad server list")
+          [[ "${{ github.event.inputs.easyList }}" != "false" ]] && SELECTED+=("EasyList")
+          [[ "${{ github.event.inputs.uBlockDefault }}" != "false" ]] && SELECTED+=("uBlock Origin (Default)")
+          [[ "${{ github.event.inputs.uBlockQuick }}" != "false" ]] && SELECTED+=("uBlock Origin (Quick fixes)")
+          [[ "${{ github.event.inputs.uBlockUnbreak }}" != "false" ]] && SELECTED+=("uBlock Origin (Unbreak)")
+          [[ "${{ github.event.inputs.urlhaus }}" != "false" ]] && SELECTED+=("Online Malicious URL Blocklist (URLhaus)")
+          [[ "${{ github.event.inputs.ruAdList }}" != "false" ]] && SELECTED+=("RU AdList (Classic)")
+          [[ "${{ github.event.inputs.peterLowe }}" != "false" ]] && SELECTED+=("Peter Lowe's Ad server list")
+          
+          if [ ${#SELECTED[@]} -eq 0 ]; then
+            echo "WARNING: No sources selected. Using all defaults."
+            SELECTED=("EasyList" "uBlock Origin (Default)" "uBlock Origin (Quick fixes)" "uBlock Origin (Unbreak)" "Online Malicious URL Blocklist (URLhaus)" "RU AdList (Classic)" "Peter Lowe's Ad server list")
+          fi
+          
           echo "sources=${SELECTED[*]}" >> $GITHUB_OUTPUT
+          echo "Selected sources: ${SELECTED[*]}"
 
       - name: Run filter merger script
-        run: python scripts/python.005.py --sources ${{ steps.sources.outputs.sources }}
+        run: |
+          python scripts/python.005.py --sources ${{ steps.sources.outputs.sources }}
+        timeout-minutes: 15
+
+      - name: Verify output file
+        run: |
+          if [ ! -f pages/archive/backup/output.txt ]; then
+            echo "ERROR: Output file was not created!"
+            exit 1
+          fi
+          
+          FILE_SIZE=$(wc -c < pages/archive/backup/output.txt)
+          LINE_COUNT=$(wc -l < pages/archive/backup/output.txt)
+          echo "Output file created:"
+          echo "  Size: $FILE_SIZE bytes"
+          echo "  Lines: $LINE_COUNT"
+          
+          if [ $FILE_SIZE -lt 100 ]; then
+            echo "WARNING: Output file seems too small (might be empty)"
+            head -20 pages/archive/backup/output.txt
+          fi
 
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pages/archive/backup/output.txt
+          
           if git diff --cached --quiet; then
             echo "No changes to output file."
           else
-            git commit -m "Update combined adblock list [skip ci]"
+            echo "Changes detected, committing..."
+            git commit -m "chore: update combined adblock filter list [skip ci]"
             git push
+            echo "Successfully pushed changes."
+          fi
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## AdBlock Filter Merge Workflow" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✓ Workflow completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f pages/archive/backup/output.txt ]; then
+            LINE_COUNT=$(wc -l < pages/archive/backup/output.txt)
+            echo "📊 Output file: **$LINE_COUNT** lines" >> $GITHUB_STEP_SUMMARY
           fi
