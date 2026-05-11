@@ -9,7 +9,13 @@ layout: default
     <nav class="filter-nav" id="category-filters" aria-label="Category filters">
       <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
       
-      {% assign categories = site.linkvertise | map: 'categories' | flatten | uniq | sort %}
+      {% assign collection_name = page.url | split: '/' | where_exp: 'item', 'item != ""' | first %}
+      {% if collection_name == 'index.pages' %}
+        {% assign collection_name = 'linkvertise' %}
+      {% endif %}
+      {% assign current_collection = site[collection_name] | default: site.linkvertise %}
+      
+      {% assign categories = current_collection | map: 'categories' | flatten | uniq | sort %}
       {% for category in categories %}
         {% assign slugified_cat = category | slugify %}
         {% if slugified_cat != '' %}
@@ -23,7 +29,13 @@ layout: default
 
   <!-- aria-live polite ensures layout changes are announced to assistive tech -->
   <div class="post-grid" id="post-container" aria-live="polite">
-    {% for item in site.linkvertise %}
+    {% assign collection_name = page.url | split: '/' | where_exp: 'item', 'item != ""' | first %}
+    {% if collection_name == 'index.pages' %}
+      {% assign collection_name = 'linkvertise' %}
+    {% endif %}
+    {% assign current_collection = site[collection_name] | default: site.linkvertise %}
+    
+    {% for item in current_collection %}
       <!-- Strict iteration to preserve commas during slugification -->
       <article class="post-card" data-categories="{% for cat in item.categories %}{{ cat | slugify }}{% if forloop.last == false %},{% endif %}{% endfor %}">
         <div class="card-inner">
@@ -45,7 +57,13 @@ layout: default
     {% endfor %}
   </div>
 
-  {% if site.linkvertise.size == 0 %}
+  {% assign collection_name = page.url | split: '/' | where_exp: 'item', 'item != ""' | first %}
+  {% if collection_name == 'index.pages' %}
+    {% assign collection_name = 'linkvertise' %}
+  {% endif %}
+  {% assign current_collection = site[collection_name] | default: site.linkvertise %}
+  
+  {% if current_collection.size == 0 %}
     <div class="empty-state">
       <p>No items found.</p>
     </div>
