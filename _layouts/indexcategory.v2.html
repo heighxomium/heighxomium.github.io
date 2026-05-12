@@ -34,7 +34,7 @@ layout: default
 <div class="row">
   {% for post in alldocs limit: end %}
     <div class="col-sm-6 mb-3">
-      <div class="card chulapa-border-card-index" style="border-radius: 1.25rem; overflow: hidden; border: none;
+      <div class="card chulapa-border-card-index" style="position: relative; border-radius: 1.25rem; overflow: hidden; border: none;
            {%- if post.og_image or post.header_img -%}
              background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
                          url('{{- post.og_image | default: post.header_img | absolute_url -}}')
@@ -44,8 +44,9 @@ layout: default
            {%- endif -%}
            color: #fff;">
         
-        <div class="card-body chulapa-links-hover-only" style="position: relative; z-index: 1;">
-          <a href="{{- post.url | absolute_url -}}" class="text-white text-decoration-none">
+        <div class="card-body chulapa-links-hover-only" style="position: relative; z-index: 2;">
+          <!-- The stretched-link makes the whole card clickable -->
+          <a href="{{- post.url | absolute_url -}}" class="text-white text-decoration-none stretched-link">
             <h5 class="card-title">{{- post.title | default: "---" | markdownify | remove: '<p>' | remove: '</p>' | strip_newlines | strip -}}</h5>
           </a>
           {% if post.subtitle -%}
@@ -64,7 +65,8 @@ layout: default
         </div>
 
         {% if post.date or post.show_tags or post.show_categories %}
-          <div class="card-footer border-top-0" style="background-color: rgba(0, 0, 0, 0.6); z-index: 1; position: relative; border-radius: 0 0 1.25rem 1.25rem;">
+          <!-- Footer must be above the stretched-link overlay; badges need to remain clickable -->
+          <div class="card-footer border-top-0" style="position: relative; z-index: 2; background-color: rgba(0, 0, 0, 0.6); border-radius: 0 0 1.25rem 1.25rem;">
             {% if post.date -%}
               <p class="small text-right font-italic mb-1">
                 {% if post.last_modified_at %}
@@ -76,14 +78,14 @@ layout: default
             
             {%- for category in post.categories -%}
               <a href="{{- category | replace: ' ', '-' | prepend: '#' | prepend: post.cloudcategory_url | absolute_url | uri_escape -}}"
-                 class="badge chulapa-pill-bg-secondary mx-1" style="background-color: rgba(255,255,255,0.85); color: #343a40;">
+                 class="badge chulapa-pill-bg-secondary mx-1" style="position: relative; z-index: 3; background-color: rgba(255,255,255,0.85); color: #343a40;">
                 {{- category -}}
               </a>
             {%- endfor -%}
             
             {%- for tag in post.tags -%}
               <a href="{{- tag | replace: ' ', '-' | prepend: '#' | prepend: post.cloudtag_url | absolute_url | uri_escape -}}"
-                 class="badge chulapa-pill-bg-primary mx-1" style="background-color: rgba(255,255,255,0.85); color: #343a40;">
+                 class="badge chulapa-pill-bg-primary mx-1" style="position: relative; z-index: 3; background-color: rgba(255,255,255,0.85); color: #343a40;">
                 {{- tag -}}
               </a>
             {%- endfor -%}
