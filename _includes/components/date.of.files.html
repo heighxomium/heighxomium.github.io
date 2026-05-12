@@ -1,0 +1,15 @@
+{%- comment -%}
+  Usage: {% include components/date.of.files.html post=post %}
+  Outputs the last modified date from Git (if available), otherwise falls back to the post's `date` field.
+  Shows a redo icon when using the Git date.
+{%- endcomment -%}
+
+{%- assign thedate = include.post.last_modified_at | default: include.post.date -%}
+{%- if thedate -%}
+  {%- if include.post.last_modified_at -%}
+    <i class="fa fa-redo fa-xs" aria-hidden="true"></i>
+  {%- endif -%}
+  <time datetime="{{- thedate | date_to_xmlschema -}}">
+    {{- thedate | date: "%d/%m/%Y" -}}
+  </time>
+{%- endif -%}
