@@ -1,0 +1,868 @@
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════ */
+:root {
+  --gold:        #ffc107;
+  --gold-dim:    rgba(255,193,7,0.18);
+  --gold-glow:   rgba(255,193,7,0.35);
+  --surface-1:   rgba(33,37,41,0.9);
+  --surface-2:   rgba(22,25,28,0.75);
+  --border-sub:  rgba(255,255,255,0.08);
+  --txt-muted:   rgba(255,255,255,0.5);
+  --txt-soft:    rgba(255,255,255,0.72);
+  --radius-lg:   1.25rem;
+  --radius-xl:   1.75rem;
+}
+
+/* ═══════════════════════════════════════════��═══════════════
+   KEYFRAMES
+═══════════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseBorder {
+  0%,100% { box-shadow: 0 0 0 0 var(--gold-glow), inset 0 0 0 1px var(--gold); }
+  50%     { box-shadow: 0 0 24px 4px var(--gold-dim), inset 0 0 0 1px var(--gold); }
+}
+
+@keyframes badgePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,193,7,0.4); }
+  60%     { box-shadow: 0 0 0 7px rgba(255,193,7,0); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REVEAL ON SCROLL
+═══════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal-stagger.visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.05s; }
+.reveal-stagger.visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.15s; }
+.reveal-stagger.visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.25s; }
+.reveal-stagger.visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.35s; }
+
+/* ═══════════════════════════════════════════════════════════
+   BACKGROUND DOT GRID
+═══════════════════════════════════════════════════════════ */
+.page-outer {
+  position: relative;
+  padding: 3rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-outer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,193,7,0.09) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 80%, transparent 100%);
+}
+
+.page-outer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO SECTION
+═══════════════════════════════════════════════════════════ */
+.hero-section {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-glow);
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.45rem 1.1rem;
+  border-radius: 50px;
+  animation: badgePulse 2.8s ease infinite;
+  margin-bottom: 1.2rem;
+}
+
+.hero-title {
+  font-size: clamp(1.7rem, 5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #fff 40%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.hero-lead {
+  color: var(--txt-soft);
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  max-width: 620px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CTA CARD
+═══════════════════════════════════════════════════════════ */
+.cta-card-wrap {
+  margin-bottom: 3.5rem;
+}
+
+.cta-card-wrap a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.cta-card {
+  background: var(--surface-1);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: pulseBorder 3s ease-in-out infinite;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.cta-card:hover {
+  transform: translateY(-4px);
+}
+
+.cta-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,193,7,0.08) 50%, transparent 70%);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.cta-card:hover::after {
+  opacity: 1;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.cta-icon {
+  font-size: 3.5rem;
+  color: var(--gold);
+  filter: drop-shadow(0 0 14px var(--gold-glow));
+  margin-bottom: 1rem;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.cta-card:hover .cta-icon {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+.cta-card h2 {
+  font-size: clamp(1.2rem, 4vw, 1.75rem);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.cta-card .cta-sub {
+  color: var(--txt-soft);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  margin-bottom: 1rem;
+}
+
+.cta-arrow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--gold);
+  color: #212529;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.5rem 1.4rem;
+  border-radius: 50px;
+  margin-top: 1rem;
+  transition: gap 0.25s;
+}
+
+.cta-card:hover .cta-arrow-badge {
+  gap: 0.7rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION LABEL
+═══════════════════════════════════════════════════════════ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  margin-top: 2.5rem;
+}
+
+.section-label::before,
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-sub);
+}
+
+.section-label span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--txt-muted);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CATEGORY CARDS
+═══════════════════════════════════════════════════════════ */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.cat-card {
+  background: var(--surface-1);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  border: 1px solid var(--border-sub);
+  border-top: 3px solid var(--cat-accent, #6c757d);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+  cursor: default;
+  user-select: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cat-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.35), 0 0 0 1px var(--cat-accent, #6c757d);
+}
+
+.cat-card[data-cat="apps"]   { --cat-accent: #4dabf7; }
+.cat-card[data-cat="movies"] { --cat-accent: #f783ac; }
+.cat-card[data-cat="codes"]  { --cat-accent: #69db7c; }
+.cat-card[data-cat="misc"]   { --cat-accent: #da77f2; }
+
+.cat-icon-ring {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid var(--cat-accent, #6c757d);
+  box-shadow: 0 0 18px -4px var(--cat-accent, transparent);
+  transition: box-shadow 0.3s;
+}
+
+.cat-card:hover .cat-icon-ring {
+  box-shadow: 0 0 28px -2px var(--cat-accent, transparent);
+}
+
+.cat-icon-ring i {
+  font-size: 1.9rem;
+  color: var(--cat-accent, #fff);
+}
+
+.cat-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.6rem;
+}
+
+.cat-card p {
+  font-size: 0.8rem;
+  color: var(--txt-soft);
+  flex: 1;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+.cat-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.07);
+  color: var(--cat-accent, #fff);
+  border: 1px solid var(--cat-accent, transparent);
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INFO PANEL (Stats + How it works)
+═══════════════════════════════════════════════════════════ */
+.info-panel {
+  background: var(--surface-2);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-sub);
+  border-left: 4px solid var(--gold);
+  overflow: hidden;
+  margin-bottom: 3.5rem;
+}
+
+.info-panel-content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+  align-items: stretch;
+}
+
+.info-panel-divider {
+  display: none;
+  width: 1px;
+  background: var(--border-sub);
+}
+
+@media (min-width: 992px) {
+  .info-panel-divider {
+    display: block;
+  }
+}
+
+.info-panel h5 {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.stats-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.stat-column {
+  padding: 1rem;
+  border-right: 1px solid var(--border-sub);
+  white-space: nowrap;
+}
+
+.stat-column:last-child {
+  border-right: none;
+}
+
+.stat-num {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  color: var(--gold);
+  display: block;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  transform: translateY(6px);
+}
+
+.stat-num.counted {
+  opacity: 1;
+  transform: none;
+}
+
+.stat-label {
+  font-size: 0.74rem;
+  color: var(--txt-muted);
+  margin-top: 0.5rem;
+}
+
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--txt-muted);
+  justify-content: center;
+}
+
+.info-panel-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.how-intro {
+  color: var(--txt-soft);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.how-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.how-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-sub);
+  color: rgba(255,255,255,0.8);
+  transition: background 0.2s;
+}
+
+.how-badge:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.how-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FEATURE TILES
+═══════════════════════════════════════════════════════════ */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.feature-tile {
+  background: var(--surface-1);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: transform 0.25s ease, border-color 0.25s;
+  cursor: default;
+  user-select: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.feature-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold-glow);
+}
+
+.feature-tile i {
+  font-size: 1.8rem;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+  display: block;
+  transition: transform 0.3s;
+}
+
+.feature-tile:hover i {
+  transform: scale(1.15);
+}
+
+.feature-tile h6 {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-tile small {
+  color: var(--txt-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BACK TO TOP BUTTON
+═══════════════════════════════════════════════════════════ */
+.btt-section {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.btt-btn {
+  background: transparent;
+  border: 1px solid rgba(255,193,7,0.4);
+  color: var(--gold);
+  border-radius: 50px;
+  padding: 0.7rem 2.5rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.btt-btn:hover {
+  background: var(--gold);
+  color: #212529;
+  border-color: var(--gold);
+  box-shadow: 0 0 24px var(--gold-glow);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER NOTE
+═══════════════════════════════════════════════════════════ */
+.footer-note {
+  font-size: 0.75rem;
+  color: var(--txt-muted);
+  text-align: center;
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border-sub);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE ADJUSTMENTS
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  .page-outer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .hero-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .cta-card-wrap {
+    margin-bottom: 2.5rem;
+  }
+
+  .cta-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .category-grid {
+    grid-template-columns: 1fr;
+    margin-bottom: 2.5rem;
+  }
+
+  .cat-card {
+    flex-direction: row;
+    text-align: left;
+    padding: 1rem;
+    gap: 0.85rem;
+    border-top: 1px solid var(--border-sub);
+    border-left: 3px solid var(--cat-accent, #6c757d);
+  }
+
+  .cat-icon-ring {
+    margin: 0;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+  }
+
+  .cat-icon-ring i {
+    font-size: 1.5rem;
+  }
+
+  .info-panel-content {
+    grid-template-columns: 1fr;
+  }
+
+  .info-panel-divider {
+    display: block;
+    height: 1px;
+    width: 100%;
+  }
+
+  .stats-section {
+    padding: 1.5rem;
+    white-space: normal;
+  }
+
+  .info-panel-section {
+    padding: 1.5rem;
+  }
+
+  .stat-column {
+    white-space: normal;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    margin-bottom: 2.5rem;
+  }
+
+  .btt-btn {
+    width: 100%;
+  }
+
+  .section-label {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+</style>
+
+<div class="page-outer">
+
+  <!-- Hero Section -->
+  <div class="reveal hero-section">
+    <div class="hero-badge">
+      <i class="fas fa-link"></i> Premium Linkvertise Library
+    </div>
+    <h1 class="hero-title">Apps · Movies · Codes · More</h1>
+    <p class="hero-lead">
+      Fast access to exclusive files, software, media, and resources through secure Linkvertise gates. Explore our curated collection below.
+    </p>
+  </div>
+
+  <!-- CTA Card -->
+  <div class="cta-card-wrap reveal">
+    <a href="/pages/index.pages/linkvertise">
+      <div class="cta-card">
+        <i class="fas fa-leaf cta-icon"></i>
+        <h2>View All Posts</h2>
+        <p class="cta-sub">Browse the complete library — Apps, Movies, Codes, Misc &amp; more</p>
+        <span class="cta-arrow-badge">
+          Access Linkvertise Posts <i class="fas fa-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Category Section -->
+  <div class="reveal section-label"><span>Browse by category</span></div>
+  <div class="category-grid reveal-stagger">
+    <div class="cat-card" data-cat="apps">
+      <div class="cat-icon-ring"><i class="fas fa-mobile-alt"></i></div>
+      <div>
+        <h3>📱 Premium Apps</h3>
+        <p>Modded APKs, productivity tools, design software, and exclusive applications.</p>
+        <span class="cat-badge">New daily</span>
+      </div>
+    </div>
+
+    <div class="cat-card" data-cat="movies">
+      <div class="cat-icon-ring"><i class="fas fa-film"></i></div>
+      <div>
+        <h3>🎬 Movies &amp; Series</h3>
+        <p>HD releases, complete seasons, collections and subtitles.</p>
+        <span class="cat-badge">Trending now</span>
+      </div>
+    </div>
+
+    <div class="cat-card" data-cat="codes">
+      <div class="cat-icon-ring"><i class="fas fa-code"></i></div>
+      <div>
+        <h3>💻 Codes &amp; Scripts</h3>
+        <p>Source codes, programming utilities, automation scripts.</p>
+        <span class="cat-badge">Open source</span>
+      </div>
+    </div>
+
+    <div class="cat-card" data-cat="misc">
+      <div class="cat-icon-ring"><i class="fas fa-puzzle-piece"></i></div>
+      <div>
+        <h3>🎲 Miscellaneous</h3>
+        <p>E-books, wallpapers, soundtracks, design assets, fonts, etc.</p>
+        <span class="cat-badge">Evergreen</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Platform Overview -->
+  <div class="reveal section-label"><span>Platform overview</span></div>
+  <div class="info-panel reveal">
+    <div class="info-panel-content">
+      <!-- Stats Section -->
+      <div class="stats-section">
+        <h5>Platform Stats</h5>
+        <div class="stats-grid">
+          <div class="stat-column">
+            <span class="stat-num" data-target="890" data-suffix="+">0</span>
+            <div class="stat-label">Total files</div>
+          </div>
+          <div class="stat-column">
+            <span class="stat-num" data-target="35" data-suffix="K+">0</span>
+            <div class="stat-label">Downloads</div>
+          </div>
+          <div class="stat-column">
+            <span class="stat-num" data-target="4.8" data-suffix="★" data-float="1">0</span>
+            <div class="stat-label">User trust</div>
+          </div>
+        </div>
+        <div class="trust-badge">
+          <i class="fas fa-shield-alt" style="color: #28a745;"></i>
+          All content scanned &amp; verified daily
+        </div>
+      </div>
+
+      <div class="info-panel-divider"></div>
+
+      <!-- How It Works Section -->
+      <div class="info-panel-section">
+        <h5>How Linkvertise works</h5>
+        <p class="how-intro">
+          Complete a quick task — a short survey, captcha, or a few-second wait — to unlock premium download links. Safe, fast, and supports the server. No tricks.
+        </p>
+        <div class="how-badges-container">
+          <span class="how-badge"><span class="dot bg-success"></span> No virus</span>
+          <span class="how-badge"><span class="dot" style="background: var(--gold);"></span> ~10s wait</span>
+          <span class="how-badge"><span class="dot" style="background: #4dabf7;"></span> Worldwide</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="reveal section-label"><span>Why use this</span></div>
+  <div class="features-grid reveal-stagger">
+    <div class="feature-tile">
+      <i class="fas fa-database"></i>
+      <h6>Daily Updates</h6>
+      <small>Fresh file uploads every single day</small>
+    </div>
+
+    <div class="feature-tile">
+      <i class="fas fa-headset"></i>
+      <h6>Link Support</h6>
+      <small>Re-upload guarantee — just report or comment</small>
+    </div>
+
+    <div class="feature-tile">
+      <i class="fas fa-layer-group"></i>
+      <h6>Multi-Category</h6>
+      <small>Apps, Movies, Code &amp; Misc all in one place</small>
+    </div>
+
+    <div class="feature-tile">
+      <i class="fas fa-bolt"></i>
+      <h6>Easier Downloads</h6>
+      <small>Simple access to premium content with quick Linkvertise verification</small>
+    </div>
+  </div>
+
+  <!-- Back to Top -->
+  <div class="btt-section">
+    <button class="btt-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      Back to Top
+    </button>
+  </div>
+
+  <!-- Footer Note -->
+  <div class="footer-note">
+    <i class="fas fa-shield-heart" style="margin-right: 0.4rem;"></i>
+    All files are hosted on third-party services. Linkvertise unlocks provide ad-revenue to keep me motivated&hellip;
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // Intersection reveal observer
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
+
+  // Animated stat counters
+  const statsIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+
+      const el = e.target;
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const isFloat = !!el.dataset.float;
+      const duration = 1200;
+      const steps = 40;
+      const stepDuration = duration / steps;
+      let current = 0;
+
+      el.classList.add('counted');
+
+      const timer = setInterval(() => {
+        current += target / steps;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = isFloat ? current.toFixed(1) + suffix : Math.round(current) + suffix;
+      }, stepDuration);
+
+      statsIO.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.stat-num[data-target]').forEach(el => statsIO.observe(el));
+})();
+</script>
