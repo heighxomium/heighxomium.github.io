@@ -62,7 +62,6 @@ plugins:
   - jekyll-paginate
   - jekyll-include-cache
   - jekyll-sitemap
-  - jekyll-last-modified-at
 exclude:
   - LICENSE
   - Gemfile
