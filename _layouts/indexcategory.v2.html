@@ -34,6 +34,9 @@ layout: default
 <div class="row">
   {% for post in alldocs limit: end %}
     <!-- DEBUG last_modified_at = {{ post.last_modified_at }} -->
+<div class="row">
+  {% for post in alldocs limit: end %}
+    <!-- This text will appear ON THE CARD if the loop runs -->
     <div class="col-sm-6 mb-3">
       <div class="card chulapa-border-card-index" style="position: relative; border-radius: 1.25rem; overflow: hidden; border: none;
            {%- if post.og_image or post.header_img -%}
@@ -45,6 +48,11 @@ layout: default
            {%- endif -%}
            color: #fff;">
         
+        <!-- VISIBLE DEBUG – check if this text appears -->
+        <div style="background:red; color:white; padding:5px; font-weight:bold; z-index:999; position:relative;">
+          DEBUG_TEXT: last_modified_at = [{{- post.last_modified_at -}}]
+        </div>
+
         <div class="card-body chulapa-links-hover-only" style="position: relative; z-index: 2;">
           <a href="{{- post.url | absolute_url -}}" class="text-white text-decoration-none stretched-link">
             <h5 class="card-title">{{- post.title | default: "---" | markdownify | remove: '<p>' | remove: '</p>' | strip_newlines | strip -}}</h5>
