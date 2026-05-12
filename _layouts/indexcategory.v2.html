@@ -63,12 +63,17 @@ layout: default
           </div>
         </div>
 
-        {% if post.date or post.last_modified_at or post.show_tags or post.show_categories %}
+        {% if post.last_modified_at or post.date or post.show_tags or post.show_categories %}
           <div class="card-footer border-top-0" style="position: relative; z-index: 2; background-color: rgba(0, 0, 0, 0.6); border-radius: 0 0 1.25rem 1.25rem;">
             
-            {% if post.date or post.last_modified_at -%}
+            {% if post.last_modified_at or post.date -%}
               <p class="small text-right font-italic mb-1">
-                {% include components/date.of.files.html post=post %}
+                {% if post.last_modified_at %}
+                  <i class="fa fa-redo fa-xs" aria-hidden="true"></i>
+                {% endif %}
+                <time datetime="{{- post.last_modified_at | default: post.date | date_to_xmlschema -}}">
+                  {{- post.last_modified_at | default: post.date | date: "%d/%m/%Y" -}}
+                </time>
               </p>
             {%- endif %}
             
