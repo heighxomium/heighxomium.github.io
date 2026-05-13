@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       run_group_1:
-        description: "Group 1 (Scripts 1–4)"
+        description: "Linkvertise (Python 1–4)"
         type: boolean
         default: false
       run_group_2:
-        description: "Group 2 (Script 5)"
+        description: "AdBlock Plus (Python 5)"
         type: boolean
         default: false
       debug_mode:
-        description: "Debug (run but do not push)"
+        description: "Debug"
         type: boolean
         default: false
 
