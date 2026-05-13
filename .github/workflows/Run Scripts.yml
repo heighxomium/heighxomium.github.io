@@ -34,15 +34,15 @@ jobs:
       - name: Run Group 1 (Scripts 1–4)
         if: ${{ inputs.run_group_1 }}
         run: |
-          python scripts/python.script.001.py
-          python scripts/python.script.002.py
-          python scripts/python.script.003.py
-          python scripts/python.script.004.py
+          python scripts/python.001.py
+          python scripts/python.002.py
+          python scripts/python.003.py
+          python scripts/python.004.py
 
       - name: Run Group 2 (Script 5)
         if: ${{ inputs.run_group_2 }}
         run: |
-          python scripts/python.script.005.py
+          python scripts/python.005.py
 
       - name: Commit and push generated files
         if: ${{ !inputs.debug_mode }}
