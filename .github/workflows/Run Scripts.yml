@@ -1,30 +1,18 @@
-name: Run Scripts
+name: Run Filter Scripts
 
 on:
   workflow_dispatch:
     inputs:
-      run_script_1:
-        description: "Script 1"
+      run_group_1:
+        description: "Group 1 (Scripts 1–4)"
         type: boolean
         default: false
-      run_script_2:
-        description: "Script 2"
-        type: boolean
-        default: false
-      run_script_3:
-        description: "Script 3"
-        type: boolean
-        default: false
-      run_script_4:
-        description: "Script 4"
-        type: boolean
-        default: false
-      run_script_5:
-        description: "Script 5"
+      run_group_2:
+        description: "Group 2 (Script 5)"
         type: boolean
         default: false
       debug_mode:
-        description: "Debug (run scripts but do not push)"
+        description: "Debug (run but do not push)"
         type: boolean
         default: false
 
@@ -43,25 +31,18 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run Script 1 (if selected)
-        if: ${{ inputs.run_script_1 }}
-        run: python scripts/python.script.001.py
+      - name: Run Group 1 (Scripts 1–4)
+        if: ${{ inputs.run_group_1 }}
+        run: |
+          python scripts/python.script.001.py
+          python scripts/python.script.002.py
+          python scripts/python.script.003.py
+          python scripts/python.script.004.py
 
-      - name: Run Script 2 (if selected)
-        if: ${{ inputs.run_script_2 }}
-        run: python scripts/python.script.002.py
-
-      - name: Run Script 3 (if selected)
-        if: ${{ inputs.run_script_3 }}
-        run: python scripts/python.script.003.py
-
-      - name: Run Script 4 (if selected)
-        if: ${{ inputs.run_script_4 }}
-        run: python scripts/python.script.004.py
-
-      - name: Run Script 5 (if selected)
-        if: ${{ inputs.run_script_5 }}
-        run: python scripts/python.script.005.py
+      - name: Run Group 2 (Script 5)
+        if: ${{ inputs.run_group_2 }}
+        run: |
+          python scripts/python.script.005.py
 
       - name: Commit and push generated files
         if: ${{ !inputs.debug_mode }}
