@@ -1,0 +1,5 @@
+https://ublockorigin.pages.dev/filters/filters.min.txt
+https://ublockorigin.pages.dev/filters/quick-fixes.txt
+https://ublockorigin.pages.dev/filters/unbreak.txt
+https://ublockorigin.pages.dev/filters/badware.txt
+https://urlhaus.abuse.ch/downloads/text/
