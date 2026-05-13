@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Upload each file (recursively) to EasySend API, collect share URLs.
-Writes one URL per line into downloads/list/list.txt.
+Writes one URL per line into scripts/generated/easy.send.list.txt.
 """
 
 import os
@@ -72,14 +72,13 @@ def main():
         log("downloads/ folder not found, nothing to upload", "WARNING")
         return
 
-    # Ensure list directory and empty list.txt
-    list_dir = downloads_dir / "list"
-    list_dir.mkdir(exist_ok=True)
-    list_txt = list_dir / "list.txt"
-    # Clear previous content (idempotent)
-    list_txt.write_text("")
+    # Output file at new location
+    output_path = Path("scripts/generated/easy.send.list.txt")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Clear previous content
+    output_path.write_text("")
 
-    # Gather all files recursively, excluding the list/ folder
+    # Gather all files recursively, excluding the old list/ folder (if present)
     all_files = []
     for root, dirs, files in os.walk(downloads_dir):
         if "list" in dirs:
@@ -93,11 +92,11 @@ def main():
     for file_path in all_files:
         url = upload_file(file_path)
         if url:
-            with open(list_txt, "a") as f:
+            with open(output_path, "a") as f:
                 f.write(url + "\n")
         time.sleep(DELAY_SECONDS)
 
-    log(f"Upload finished. Share links saved to {list_txt}")
+    log(f"Upload finished. Share links saved to {output_path}")
 
 if __name__ == "__main__":
     main()
