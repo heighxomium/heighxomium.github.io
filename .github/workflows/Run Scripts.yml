@@ -1,0 +1,72 @@
+name: Run Scripts
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_script_1:
+        description: "Script 1"
+        type: boolean
+        default: false
+      run_script_2:
+        description: "Script 2"
+        type: boolean
+        default: false
+      run_script_3:
+        description: "Script 3"
+        type: boolean
+        default: false
+      run_script_4:
+        description: "Script 4"
+        type: boolean
+        default: false
+      run_script_5:
+        description: "Script 5"
+        type: boolean
+        default: false
+      debug_mode:
+        description: "Debug (run scripts but do not push)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Script 1 (if selected)
+        if: ${{ inputs.run_script_1 }}
+        run: python scripts/python.script.001.py
+
+      - name: Run Script 2 (if selected)
+        if: ${{ inputs.run_script_2 }}
+        run: python scripts/python.script.002.py
+
+      - name: Run Script 3 (if selected)
+        if: ${{ inputs.run_script_3 }}
+        run: python scripts/python.script.003.py
+
+      - name: Run Script 4 (if selected)
+        if: ${{ inputs.run_script_4 }}
+        run: python scripts/python.script.004.py
+
+      - name: Run Script 5 (if selected)
+        if: ${{ inputs.run_script_5 }}
+        run: python scripts/python.script.005.py
+
+      - name: Commit and push generated files
+        if: ${{ !inputs.debug_mode }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update generated filter files"
+          file_pattern: "scripts/generated/*"
+          branch: main
