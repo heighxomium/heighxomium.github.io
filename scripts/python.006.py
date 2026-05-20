@@ -8,10 +8,11 @@ import requests
 import subprocess
 from pathlib import Path
 from bs4 import BeautifulSoup
+from packaging.version import Version, InvalidVersion
 
 # ========== Configuration ==========
 ARCHITECTURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
-FTP_BASE = "https://archive.mozilla.org/pub/fenix/releases/"
+FTP_BASE = "https://ftp.mozilla.org/pub/fenix/releases/"
 IRONFOX_REPO = "https://github.com/ironfox-oss/IronFox.git"
 IRONFOX_OVERLAY_DIR = "patches/fenix-overlay"
 OUTPUT_DIR = Path("scripts/assets/generated/python.006")
@@ -45,9 +46,7 @@ def ensure_tool(jar_path, url):
 def fetch_with_retries(url, retries=3, delay=5):
     for attempt in range(retries):
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
             resp = requests.get(url, timeout=30, headers=headers)
             resp.raise_for_status()
             return resp
@@ -58,41 +57,72 @@ def fetch_with_retries(url, retries=3, delay=5):
             else:
                 raise
 
+def normalize_version(version_str):
+    """
+    Convert different version formats to a standardized string for comparison.
+    Examples:
+    - 152.0b1        -> 152.0.1
+    - 152.0.0-beta.1 -> 152.0.0.1
+    """
+    # Handle X.XbX format (e.g., 152.0b1)
+    match = re.match(r'^(\d+\.\d+)b(\d+)$', version_str)
+    if match:
+        base, beta = match.groups()
+        return f"{base}.{beta}"
+    
+    # Handle X.X.X-beta.X format (e.g., 100.0.0-beta.1)
+    match = re.match(r'^(\d+\.\d+\.\d+)-beta\.(\d+)$', version_str)
+    if match:
+        base, beta = match.groups()
+        return f"{base}.{beta}"
+    
+    # Fallback: return as-is (for stable versions like 100.1.0)
+    return version_str
+
 def get_latest_beta_version():
-    """Extract the newest beta version from the directory listing."""
+    """Finds the most recent beta version by parsing the directory listing."""
     resp = fetch_with_retries(FTP_BASE)
     soup = BeautifulSoup(resp.text, "html.parser")
-    versions = []
-    for link in soup.find_all("a"):
-        href = link.get("href")
-        if href and href.endswith("/") and href != "../":
-            ver = href.rstrip("/")
-            # Match version like 151.0b10, 125.0b2, etc.
-            if re.match(r'^\d+(\.\d+)+b\d+$', ver):
-                versions.append(ver)
-    if not versions:
-        raise RuntimeError("No Beta versions found")
-    # Sort correctly: 151.0b1 < 151.0b2 ... < 151.0b10
+    
+    # Collect all potential beta versions
+    beta_versions = []
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href and href.endswith('/') and href != '../':
+            ver = href.rstrip('/')
+            # Accept both X.X.X-beta.X and X.XbX formats
+            if re.search(r'beta|b\d', ver):
+                beta_versions.append(ver)
+    
+    if not beta_versions:
+        raise RuntimeError("No beta versions found in the directory listing.")
+    
+    # Sort using the normalized version numbers
     def version_key(v):
-        return [int(x) for x in re.split(r'\.|b', v)]
-    versions.sort(key=version_key)
-    return versions[-1]
+        normalized = normalize_version(v)
+        try:
+            return Version(normalized)
+        except InvalidVersion:
+            # Fallback for unparseable versions
+            return Version('0')
+    
+    beta_versions.sort(key=version_key)
+    latest = beta_versions[-1]
+    print(f"Latest beta version found: {latest}")
+    return latest
 
 def get_apk_urls(version):
-    """Get download URLs for each architecture."""
+    """Generates the download URLs for each architecture."""
     base_url = f"{FTP_BASE}{version}/android/"
-    resp = fetch_with_retries(base_url)
-    soup = BeautifulSoup(resp.text, "html.parser")
+    # The directory name may differ from the version folder
+    dir_name = f"fenix-{version}-android-"
     urls = {}
-    for link in soup.find_all("a"):
-        href = link.get("href")
-        if href and href.endswith(".apk"):
-            for arch in ARCHITECTURES:
-                if arch in href:
-                    urls[arch] = base_url + href
-                    break
-    if len(urls) != len(ARCHITECTURES):
-        raise RuntimeError(f"Missing APKs for architectures. Found: {list(urls.keys())}")
+    
+    for arch in ARCHITECTURES:
+        full_dir = f"{dir_name}{arch}"
+        apk_name = f"fenix-{version}.multi.android-{arch}.apk"
+        urls[arch] = f"{base_url}{full_dir}/{apk_name}"
+    
     return urls
 
 def download_apk(url, dest):
