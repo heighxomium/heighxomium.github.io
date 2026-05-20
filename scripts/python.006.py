@@ -13,7 +13,8 @@ from packaging import version
 ARCHITECTURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
 FTP_BASE = "https://ftp.mozilla.org/pub/fenix/releases/"
 IRONFOX_REPO = "https://github.com/ironfox-oss/IronFox.git"
-IRONFOX_OVERLAY_DIR = "fenix-overlay"                     # Fixed: now directly under repo root
+# Updated overlay location – confirmed from repository structure
+IRONFOX_OVERLAY_DIR = "patches/gecko-overlay/ironfox"
 OUTPUT_DIR = Path("scripts/assets/generated/python.006")
 ICON_CACHE_DIR = Path("ironfox_assets")
 APKTOOL_JAR = "apktool.jar"
@@ -28,7 +29,7 @@ def run_cmd(cmd_args, cwd=None):
     Example: run_cmd(["git", "clone", "--depth", "1", "url", "dest"])
     """
     if isinstance(cmd_args, str):
-        # Fallback – but should not happen after conversion
+        # Fallback – should not happen after conversion
         print(f"[WARNING] Using string command: {cmd_args}")
         result = subprocess.run(cmd_args, shell=True, cwd=cwd, capture_output=True, text=True)
     else:
@@ -105,6 +106,24 @@ def download_apk(url, dest):
             f.write(chunk)
     return dest
 
+def locate_overlay(repo_root):
+    """
+    Search for the overlay directory in the IronFox repository.
+    Returns the Path to the found overlay, or raises an error.
+    """
+    possible_paths = [
+        "fenix-overlay",                     # historical location
+        "patches/gecko-overlay/ironfox",     # current location
+        "overlay",                           # fallback
+        "branding"                           # another fallback
+    ]
+    for rel_path in possible_paths:
+        full_path = repo_root / rel_path
+        if full_path.exists() and full_path.is_dir():
+            print(f"Found overlay at {full_path}")
+            return full_path
+    raise RuntimeError(f"Could not find overlay directory in {repo_root}. Tried: {possible_paths}")
+
 def fetch_ironfox_overlay(overlay_dir):
     """Clone the IronFox repo and extract the overlay directory."""
     if overlay_dir.exists():
@@ -113,9 +132,11 @@ def fetch_ironfox_overlay(overlay_dir):
     temp_repo = Path(tempfile.mkdtemp())
     print("Cloning Iron Fox repository...")
     run_cmd(["git", "clone", "--depth", "1", IRONFOX_REPO, str(temp_repo)])
-    src_overlay = temp_repo / IRONFOX_OVERLAY_DIR
-    if not src_overlay.exists():
-        raise RuntimeError(f"Overlay directory not found: {src_overlay}")
+    
+    # Locate the overlay directory dynamically
+    src_overlay = locate_overlay(temp_repo)
+    
+    # Copy the overlay to our cache
     shutil.copytree(src_overlay, overlay_dir, symlinks=False, dirs_exist_ok=True)
     shutil.rmtree(temp_repo)
     print(f"Overlay copied to {overlay_dir}")
@@ -198,7 +219,7 @@ def main():
     """Main orchestration function."""
     ensure_tool(APKTOOL_JAR, APKTOOL_URL)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    overlay_dir = ICON_CACHE_DIR / IRONFOX_OVERLAY_DIR
+    overlay_dir = ICON_CACHE_DIR / "fenix-overlay"   # cached local copy
     fetch_ironfox_overlay(overlay_dir)
 
     # Get the latest beta version from the API
