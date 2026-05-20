@@ -4,7 +4,6 @@ import re
 import shutil
 import tempfile
 import time
-import ftplib
 import requests
 import subprocess
 from pathlib import Path
@@ -59,34 +58,22 @@ def fetch_with_retries(url, retries=3, delay=5):
                 raise
 
 def get_latest_beta_version():
-    """Connects to the FTP server and finds the newest beta version."""
-    print("📡 Connecting to FTP server to get version list...")
-    ftp = ftplib.FTP("ftp.mozilla.org")
-    ftp.login()  # anonymous login
-    ftp.cwd("/pub/fenix/releases/")
-    
-    items = []
-    ftp.retrlines('LIST', items.append)
-    ftp.quit()
-    
-    beta_versions = []
-    for item in items:
-        parts = item.split()
-        if not parts or parts[-1] == '.' or parts[-1] == '..':
-            continue
-        ver = parts[-1].rstrip('/')
-        # Accept both old '-beta.X' and new 'X.XbX' formats
-        if ('beta' in ver or 'b' in ver) and re.match(r'^\d+(\.\d+)+(-\d+)?(\.\d+)*([.-]beta\.?\d+)?$', ver):
-            beta_versions.append(ver)
-    
-    if not beta_versions:
-        raise RuntimeError("❌ No beta versions found in the directory listing.")
-    
-    # Sort using packaging.version for correct numeric ordering
-    beta_versions.sort(key=lambda v: version.parse(v))
-    latest_version = beta_versions[-1]
-    print(f"📦 Latest beta version found: {latest_version}")
-    return latest_version
+    """
+    Fetches the latest Fenix beta version from Mozilla's official
+    Product Details API (fenix_beta_version.json).
+    """
+    print("📡 Fetching latest beta version from Mozilla API...")
+    url = "https://product-details.mozilla.org/1.0/fenix_beta_version.json"
+    try:
+        resp = fetch_with_retries(url)
+        data = resp.json()
+        latest_version = data.get("version")
+        if not latest_version:
+            raise RuntimeError("API response missing 'version' field")
+        print(f"📦 Latest beta version found: {latest_version}")
+        return latest_version
+    except Exception as e:
+        raise RuntimeError(f"Failed to get beta version from API: {e}") from e
 
 def get_apk_urls(version):
     """Generates correct download URLs for all architectures."""
@@ -185,16 +172,16 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     overlay_dir = ICON_CACHE_DIR / "fenix-overlay"
     fetch_ironfox_overlay(overlay_dir)
-    version = get_latest_beta_version()
-    print(f"Latest Firefox Beta version: {version}")
-    apk_urls = get_apk_urls(version)
+    version_str = get_latest_beta_version()
+    print(f"Latest Firefox Beta version: {version_str}")
+    apk_urls = get_apk_urls(version_str)
     downloaded = {}
     for arch, url in apk_urls.items():
-        dest = OUTPUT_DIR / f"fenix-{version}-{arch}.apk"
+        dest = OUTPUT_DIR / f"fenix-{version_str}-{arch}.apk"
         downloaded[arch] = download_apk(url, dest)
     final_apks = {}
     for arch, apk_path in downloaded.items():
-        output_apk = OUTPUT_DIR / f"ironfox-{version}-{arch}-signed.apk"
+        output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
         final_apks[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
     print("\n✅ All APKs successfully rebranded:")
     for arch, path in final_apks.items():
