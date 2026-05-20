@@ -1,5 +1,5 @@
 [Adblock Plus 2.0]
-! Title: Mix Filters
+! Title: Mix Filters (19077 filters)
 ###bt-ads
 ###placeAds
 ###sidearm-adblock-modal
