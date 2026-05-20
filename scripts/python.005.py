@@ -43,10 +43,12 @@ def remove_generic_cosmetic(content):
     return "\n".join(filtered)
 
 def sanitize_filename(name):
-    """Replace spaces, hyphens, underscores with dots; collapse multiple dots."""
-    name = name.replace(' ', '.').replace('-', '.').replace('_', '.')
+    """Convert to lowercase, keep only alphanumeric and dots, replace others with dots, collapse multiple dots."""
+    name = name.lower()
+    name = re.sub(r'[^a-z0-9.]', '.', name)
     name = re.sub(r'\.+', '.', name)
-    return name
+    name = name.strip('.')
+    return name if name else "filter"
 
 def get_output_filename(url, content, existing_names):
     """Determine filename: prefer internal name, fallback to URL-derived."""
@@ -92,7 +94,6 @@ def main():
     for url in urls:
         try:
             content = download_filter_list(url)
-            # Modify title before extracting name? No, extract original name first
             filter_name = extract_filter_name(content)
             content = modify_title(content)
             content = remove_generic_cosmetic(content)
