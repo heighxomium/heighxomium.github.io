@@ -1,0 +1,70 @@
+name: Run Scripts
+
+on:
+  workflow_dispatch:
+    inputs:
+      group1:
+        description: "Linkvertise"
+        type: boolean
+        default: false
+      group2:
+        description: "AdBlock Plus"
+        type: boolean
+        default: false
+      group3:
+        description: "Iron Fox rebranding"
+        type: boolean
+        default: false
+      debug:
+        description: "Debug (skip commit)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install deps
+        run: pip install requests beautifulsoup4
+
+      - name: Group 1 (Linkvertise)
+        if: ${{ inputs.group1 }}
+        run: |
+          python scripts/python.001.py
+          python scripts/python.002.py
+          python scripts/python.003.py
+          python scripts/python.004.py
+
+      - name: Group 2 (AdBlock Plus)
+        if: ${{ inputs.group2 }}
+        run: python scripts/python.005.py
+
+      - name: Group 3 (Iron Fox rebranding)
+        if: ${{ inputs.group3 }}
+        run: python scripts/python.006.py
+
+      - name: Upload APKs
+        if: ${{ inputs.group3 && !inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ironfox-apks
+          path: scripts/assets/generated/python.006/*.apk
+
+      - name: Commit filter files
+        if: ${{ !inputs.debug && (inputs.group1 || inputs.group2) }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update filter lists"
+          file_pattern: "scripts/assets/generated/*.txt"
+          branch: main
