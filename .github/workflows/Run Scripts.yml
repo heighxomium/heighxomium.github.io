@@ -35,8 +35,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
-        run: pip install requests beautifulsoup4 packaging
+      - name: Install dependencies from requirements.txt
+        run: pip install -r scripts/assets/requirements.txt
 
       - name: Group 1 (Linkvertise)
         if: ${{ inputs.group1 }}
