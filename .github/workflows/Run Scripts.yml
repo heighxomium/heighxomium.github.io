@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install deps
+      - name: Install dependencies
         run: pip install requests beautifulsoup4
 
       - name: Group 1 (Linkvertise)
@@ -56,7 +56,7 @@ jobs:
 
       - name: Create Release (for Iron Fox APKs)
         if: ${{ inputs.group3 && !inputs.debug }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Generated Artifacts
@@ -73,7 +73,7 @@ jobs:
 
       - name: Commit filter files (from Group 1 & 2)
         if: ${{ !inputs.debug && (inputs.group1 || inputs.group2) }}
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Update filter lists"
           file_pattern: "scripts/assets/generated/*.txt"
