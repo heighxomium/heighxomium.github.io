@@ -10,26 +10,20 @@ from pathlib import Path
 from packaging import version
 
 # ========== Configuration ==========
-ARCHITECTURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
+ARCHITURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
 FTP_BASE = "https://ftp.mozilla.org/pub/fenix/releases/"
 IRONFOX_REPO = "https://github.com/ironfox-oss/IronFox.git"
-# Updated overlay location – confirmed from repository structure
-IRONFOX_OVERLAY_DIR = "patches/gecko-overlay/ironfox"
+IRONFOX_OVERLAY_DIR = "patches/gecko-overlay/ironfox"   # current location
 OUTPUT_DIR = Path("scripts/assets/generated/python.006")
 ICON_CACHE_DIR = Path("ironfox_assets")
 APKTOOL_JAR = "apktool.jar"
 APKTOOL_URL = "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.11.0.jar"
-SIGNER_JAR = "uber-apk-signer-1.3.0.jar"
-SIGNER_URL = "https://github.com/patrickfav/uber-apk-signer/releases/download/1.3.0/uber-apk-signer-1.3.0.jar"
+SIGNER_JAR = "uber-apk-signer.jar"   # generic name, will be overwritten each run
 
 # ========== Helper Functions ==========
 def run_cmd(cmd_args, cwd=None):
-    """
-    Execute a command safely using a list of arguments (no shell).
-    Example: run_cmd(["git", "clone", "--depth", "1", "url", "dest"])
-    """
+    """Execute a command safely using a list of arguments (no shell)."""
     if isinstance(cmd_args, str):
-        # Fallback – should not happen after conversion
         print(f"[WARNING] Using string command: {cmd_args}")
         result = subprocess.run(cmd_args, shell=True, cwd=cwd, capture_output=True, text=True)
     else:
@@ -42,15 +36,54 @@ def run_cmd(cmd_args, cwd=None):
     return result
 
 def ensure_tool(jar_path, url):
-    """Download a JAR tool if missing."""
+    """Download a tool from a direct URL with proper User-Agent header."""
     if not os.path.exists(jar_path):
         print(f"Downloading {jar_path}...")
-        r = requests.get(url, stream=True)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        r = requests.get(url, stream=True, headers=headers, allow_redirects=True)
         r.raise_for_status()
         with open(jar_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
         os.chmod(jar_path, 0o755)
+    return jar_path
+
+def download_uber_apk_signer(jar_path):
+    """
+    Download the latest uber-apk-signer .jar from GitHub releases.
+    This avoids hardcoded URLs and version numbers.
+    """
+    if os.path.exists(jar_path):
+        print(f"Using existing {jar_path}")
+        return jar_path
+
+    print("Fetching latest uber-apk-signer release from GitHub...")
+    api_url = "https://api.github.com/repos/patrickfav/uber-apk-signer/releases/latest"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    try:
+        resp = requests.get(api_url, headers=headers)
+        resp.raise_for_status()
+        release = resp.json()
+    except Exception as e:
+        raise RuntimeError(f"Failed to fetch GitHub release info: {e}")
+
+    # Find the asset that ends with .jar (usually the standalone JAR)
+    asset_url = None
+    for asset in release.get("assets", []):
+        if asset["name"].endswith(".jar"):
+            asset_url = asset["browser_download_url"]
+            break
+
+    if not asset_url:
+        raise RuntimeError("No .jar asset found in the latest release")
+
+    print(f"Downloading {asset_url} -> {jar_path}")
+    r = requests.get(asset_url, stream=True, headers=headers)
+    r.raise_for_status()
+    with open(jar_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=8192):
+            f.write(chunk)
+    os.chmod(jar_path, 0o755)
     return jar_path
 
 def fetch_with_retries(url, retries=3, delay=5):
@@ -69,10 +102,7 @@ def fetch_with_retries(url, retries=3, delay=5):
                 raise
 
 def get_latest_beta_version():
-    """
-    Fetch the latest Fenix beta version from Mozilla's official Product Details API
-    using the mobile_versions.json endpoint.
-    """
+    """Fetch latest Fenix beta version from Mozilla's mobile_versions.json."""
     print("📡 Fetching latest beta version from Mozilla API...")
     url = "https://product-details.mozilla.org/1.0/mobile_versions.json"
     try:
@@ -86,20 +116,21 @@ def get_latest_beta_version():
     except Exception as e:
         raise RuntimeError(f"Failed to get beta version from API: {e}") from e
 
-def get_apk_urls(version):
+def get_apk_urls(version_str):
     """Generate download URLs for all architectures."""
-    base_url = f"{FTP_BASE}{version}/android/fenix-{version}-android-"
+    base_url = f"{FTP_BASE}{version_str}/android/fenix-{version_str}-android-"
     urls = {}
-    for arch in ARCHITECTURES:
+    for arch in ARCHITURES:
         folder = f"{base_url}{arch}/"
-        apk_file = f"fenix-{version}.multi.android-{arch}.apk"
+        apk_file = f"fenix-{version_str}.multi.android-{arch}.apk"
         urls[arch] = folder + apk_file
     return urls
 
 def download_apk(url, dest):
     """Download an APK from a given URL."""
     print(f"Downloading {url} -> {dest}")
-    r = requests.get(url, stream=True)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    r = requests.get(url, stream=True, headers=headers)
     r.raise_for_status()
     with open(dest, "wb") as f:
         for chunk in r.iter_content(chunk_size=8192):
@@ -107,15 +138,12 @@ def download_apk(url, dest):
     return dest
 
 def locate_overlay(repo_root):
-    """
-    Search for the overlay directory in the IronFox repository.
-    Returns the Path to the found overlay, or raises an error.
-    """
+    """Search for the overlay directory inside the cloned IronFox repo."""
     possible_paths = [
-        "fenix-overlay",                     # historical location
-        "patches/gecko-overlay/ironfox",     # current location
-        "overlay",                           # fallback
-        "branding"                           # another fallback
+        "fenix-overlay",
+        "patches/gecko-overlay/ironfox",
+        "overlay",
+        "branding"
     ]
     for rel_path in possible_paths:
         full_path = repo_root / rel_path
@@ -125,18 +153,14 @@ def locate_overlay(repo_root):
     raise RuntimeError(f"Could not find overlay directory in {repo_root}. Tried: {possible_paths}")
 
 def fetch_ironfox_overlay(overlay_dir):
-    """Clone the IronFox repo and extract the overlay directory."""
+    """Clone IronFox repository and copy the overlay directory to cache."""
     if overlay_dir.exists():
         print(f"Using existing overlay at {overlay_dir}")
         return overlay_dir
     temp_repo = Path(tempfile.mkdtemp())
     print("Cloning Iron Fox repository...")
     run_cmd(["git", "clone", "--depth", "1", IRONFOX_REPO, str(temp_repo)])
-    
-    # Locate the overlay directory dynamically
     src_overlay = locate_overlay(temp_repo)
-    
-    # Copy the overlay to our cache
     shutil.copytree(src_overlay, overlay_dir, symlinks=False, dirs_exist_ok=True)
     shutil.rmtree(temp_repo)
     print(f"Overlay copied to {overlay_dir}")
@@ -168,14 +192,20 @@ def replace_strings_in_file(file_path, replacements):
             f.write(content)
         print(f"Updated strings in {file_path}")
 
+def sign_apk(apk_path, output_path):
+    """Sign an APK using uber-apk-signer (always fetch latest version)."""
+    download_uber_apk_signer(SIGNER_JAR)
+    run_cmd(["java", "-jar", SIGNER_JAR, "-a", str(apk_path), "-o", str(output_path), "--allowResign"])
+    os.remove(apk_path)
+    print(f"Signed APK: {output_path}")
+
 def rebrand_apk(apk_path, output_path, overlay_dir):
     """
     Decompile, apply branding overlay, and recompile an APK.
-    Uses Apktool 2.11.0+ flags: --force instead of -f (placed after the 'd' command).
+    Uses Apktool 2.11.0+ flags: --force after the 'd' command.
     """
     work_dir = tempfile.mkdtemp(prefix="rebrand_")
     try:
-        # Decompile with --force flag (Apktool 2.11.0+)
         decompiled_dir = Path(work_dir) / "decompiled"
         run_cmd(["java", "-jar", APKTOOL_JAR, "d", str(apk_path), "-o", str(decompiled_dir), "--force"])
         apply_overlay(decompiled_dir, overlay_dir)
@@ -208,32 +238,22 @@ def rebrand_apk(apk_path, output_path, overlay_dir):
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 
-def sign_apk(apk_path, output_path):
-    """Sign an APK using uber-apk-signer."""
-    ensure_tool(SIGNER_JAR, SIGNER_URL)
-    run_cmd(["java", "-jar", SIGNER_JAR, "-a", str(apk_path), "-o", str(output_path), "--allowResign"])
-    os.remove(apk_path)
-    print(f"Signed APK: {output_path}")
-
 def main():
     """Main orchestration function."""
-    ensure_tool(APKTOOL_JAR, APKTOOL_URL)
+    ensure_tool(APKTOOL_JAR, APKTOOL_URL)   # apktool still from fixed URL
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    overlay_dir = ICON_CACHE_DIR / "fenix-overlay"   # cached local copy
+    overlay_dir = ICON_CACHE_DIR / "fenix-overlay"
     fetch_ironfox_overlay(overlay_dir)
 
-    # Get the latest beta version from the API
     version_str = get_latest_beta_version()
     print(f"Latest Firefox Beta version: {version_str}")
 
-    # Download APKs for all architectures
     apk_urls = get_apk_urls(version_str)
     downloaded = {}
     for arch, url in apk_urls.items():
         dest = OUTPUT_DIR / f"fenix-{version_str}-{arch}.apk"
         downloaded[arch] = download_apk(url, dest)
 
-    # Rebrand and sign each APK
     final_apks = {}
     for arch, apk_path in downloaded.items():
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
