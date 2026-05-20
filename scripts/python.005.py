@@ -81,7 +81,7 @@ def get_output_filename(url, content, existing_names):
 
 def main():
     url_list = "scripts/assets/url.filter.list.txt"
-    out_dir = "scripts/assets/generated"
+    out_dir = "scripts/assets/generated/python.005"
     os.makedirs(out_dir, exist_ok=True)
 
     if not os.path.exists(url_list):
