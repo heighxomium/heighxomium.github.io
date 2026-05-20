@@ -3,13 +3,27 @@ import os
 import re
 import requests
 from urllib.parse import urlparse
-from collections import defaultdict
 
 def download_filter_list(url):
     print(f"Downloading: {url}")
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     return resp.text
+
+def extract_filter_name(content):
+    """Extract filter name from ! Name: or ! Title: lines."""
+    lines = content.splitlines()
+    for line in lines:
+        if line.startswith("! Name:"):
+            parts = line.split("! Name:", 1)
+            if len(parts) == 2:
+                return parts[1].strip()
+    for line in lines:
+        if line.startswith("! Title:"):
+            parts = line.split("! Title:", 1)
+            if len(parts) == 2:
+                return parts[1].strip()
+    return None
 
 def modify_title(content):
     lines = content.splitlines()
@@ -28,30 +42,35 @@ def remove_generic_cosmetic(content):
     filtered = [line for line in lines if not (line.startswith("##") or line.startswith("#@#"))]
     return "\n".join(filtered)
 
-def get_optimized_filename(url, existing_names):
-    """Generate filename: replace -/_ with ., add .optimized before extension, handle duplicates."""
-    parsed = urlparse(url)
-    path = parsed.path
-    base = os.path.basename(path)
-    if not base:
-        base = "filter"
-    # Remove extension if present
-    if '.' in base:
-        base, ext = base.rsplit('.', 1)
+def sanitize_filename(name):
+    """Replace spaces, hyphens, underscores with dots; collapse multiple dots."""
+    name = name.replace(' ', '.').replace('-', '.').replace('_', '.')
+    name = re.sub(r'\.+', '.', name)
+    return name
+
+def get_output_filename(url, content, existing_names):
+    """Determine filename: prefer internal name, fallback to URL-derived."""
+    filter_name = extract_filter_name(content)
+    if filter_name:
+        base = sanitize_filename(filter_name)
     else:
-        ext = "txt"
-    # Replace hyphens and underscores with dots
-    base = base.replace('-', '.').replace('_', '.')
-    # Collapse multiple dots
-    base = re.sub(r'\.+', '.', base)
-    candidate = f"{base}.optimized.{ext}"
+        # Fallback: derive from URL
+        parsed = urlparse(url)
+        path = parsed.path
+        base = os.path.basename(path)
+        if not base:
+            base = "filter"
+        # Remove extension
+        if '.' in base:
+            base = base.rsplit('.', 1)[0]
+        base = sanitize_filename(base)
+    candidate = f"{base}.optimized.txt"
     if candidate not in existing_names:
         existing_names.add(candidate)
         return candidate
-    # Duplicate: append a number
     counter = 2
     while True:
-        candidate = f"{base}.{counter}.optimized.{ext}"
+        candidate = f"{base}.{counter}.optimized.txt"
         if candidate not in existing_names:
             existing_names.add(candidate)
             return candidate
@@ -73,13 +92,15 @@ def main():
     for url in urls:
         try:
             content = download_filter_list(url)
+            # Modify title before extracting name? No, extract original name first
+            filter_name = extract_filter_name(content)
             content = modify_title(content)
             content = remove_generic_cosmetic(content)
-            out_name = get_optimized_filename(url, existing_names)
+            out_name = get_output_filename(url, content, existing_names)
             out_path = os.path.join(out_dir, out_name)
             with open(out_path, 'w', encoding='utf-8') as f:
                 f.write(content)
-            print(f"Saved: {out_path}")
+            print(f"Saved: {out_path} (from name: {filter_name or 'URL-derived'})")
         except Exception as e:
             print(f"Failed {url}: {e}")
 
