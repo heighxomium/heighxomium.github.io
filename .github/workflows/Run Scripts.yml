@@ -31,6 +31,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install dependencies
+        run: pip install requests
+
       - name: Run Group 1 (Scripts 1–4)
         if: ${{ inputs.run_group_1 }}
         run: |
@@ -49,5 +52,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update generated filter files"
-          file_pattern: "scripts/generated/*"
+          file_pattern: "scripts/assets/generated/*"
           branch: main
