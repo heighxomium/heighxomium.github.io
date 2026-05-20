@@ -16,7 +16,7 @@ on:
         type: boolean
         default: false
       debug:
-        description: "Debug (skip commit)"
+        description: "Debug (skip commit & release)"
         type: boolean
         default: false
 
@@ -54,14 +54,24 @@ jobs:
         if: ${{ inputs.group3 }}
         run: python scripts/python.006.py
 
-      - name: Upload APKs
+      - name: Create Release (for Iron Fox APKs)
         if: ${{ inputs.group3 && !inputs.debug }}
-        uses: actions/upload-artifact@v4
+        uses: softprops/action-gh-release@v2
         with:
-          name: ironfox-apks
-          path: scripts/assets/generated/python.006/*.apk
+          tag_name: latest
+          name: Generated Artifacts
+          body: |
+            ## Generated Artifacts
+            
+            This release contains rebranded Firefox Beta APKs (Iron Fox) signed with a debug key.
+            
+            **Note:** Uninstall any official Firefox Beta before installing these APKs.
+          files: scripts/assets/generated/python.006/*.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit filter files
+      - name: Commit filter files (from Group 1 & 2)
         if: ${{ !inputs.debug && (inputs.group1 || inputs.group2) }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
