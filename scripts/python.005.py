@@ -11,7 +11,6 @@ def download_filter_list(url):
     return resp.text
 
 def extract_filter_name(content):
-    """Extract filter name from ! Name: or ! Title: lines."""
     lines = content.splitlines()
     for line in lines:
         if line.startswith("! Name:"):
@@ -43,29 +42,31 @@ def remove_generic_cosmetic(content):
     return "\n".join(filtered)
 
 def sanitize_filename(name):
-    """Convert to lowercase, keep only alphanumeric and dots, replace others with dots, collapse multiple dots."""
     name = name.lower()
     name = re.sub(r'[^a-z0-9.]', '.', name)
     name = re.sub(r'\.+', '.', name)
     name = name.strip('.')
     return name if name else "filter"
 
+def strip_optimized_suffix(name):
+    if name.endswith('.optimized'):
+        return name[:-9]
+    return name
+
 def get_output_filename(url, content, existing_names):
-    """Determine filename: prefer internal name, fallback to URL-derived."""
     filter_name = extract_filter_name(content)
     if filter_name:
         base = sanitize_filename(filter_name)
     else:
-        # Fallback: derive from URL
         parsed = urlparse(url)
         path = parsed.path
         base = os.path.basename(path)
         if not base:
             base = "filter"
-        # Remove extension
         if '.' in base:
             base = base.rsplit('.', 1)[0]
         base = sanitize_filename(base)
+    base = strip_optimized_suffix(base)
     candidate = f"{base}.optimized.txt"
     if candidate not in existing_names:
         existing_names.add(candidate)
