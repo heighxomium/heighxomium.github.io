@@ -4,6 +4,7 @@ import re
 import shutil
 import tempfile
 import time
+import ftplib
 import requests
 import subprocess
 from pathlib import Path
@@ -58,26 +59,37 @@ def fetch_with_retries(url, retries=3, delay=5):
                 raise
 
 def get_latest_beta_version():
-    """Finds the most recent beta version by parsing the directory listing."""
-    resp = fetch_with_retries(FTP_BASE)
-    soup = BeautifulSoup(resp.text, "html.parser")
+    """Connects to the FTP server and finds the newest beta version."""
+    print("📡 Connecting to FTP server to get version list...")
+    ftp = ftplib.FTP("ftp.mozilla.org")
+    ftp.login()  # anonymous login
+    ftp.cwd("/pub/fenix/releases/")
+    
+    items = []
+    ftp.retrlines('LIST', items.append)
+    ftp.quit()
+    
     beta_versions = []
-    for link in soup.find_all('a'):
-        href = link.get('href')
-        if not (href and href.endswith('/') and href != '../'):
+    for item in items:
+        parts = item.split()
+        if not parts or parts[-1] == '.' or parts[-1] == '..':
             continue
-        ver = href.rstrip('/')
-        # Accept only the new X.XbX format (e.g., 152.0b1)
-        if re.match(r'^\d+\.\d+b\d+$', ver):
+        ver = parts[-1].rstrip('/')
+        # Accept both old '-beta.X' and new 'X.XbX' formats
+        if ('beta' in ver or 'b' in ver) and re.match(r'^\d+(\.\d+)+(-\d+)?(\.\d+)*([.-]beta\.?\d+)?$', ver):
             beta_versions.append(ver)
+    
     if not beta_versions:
-        raise RuntimeError("No beta versions found in the new format (X.XbX).")
-    # Sort using packaging.version
+        raise RuntimeError("❌ No beta versions found in the directory listing.")
+    
+    # Sort using packaging.version for correct numeric ordering
     beta_versions.sort(key=lambda v: version.parse(v))
-    return beta_versions[-1]
+    latest_version = beta_versions[-1]
+    print(f"📦 Latest beta version found: {latest_version}")
+    return latest_version
 
 def get_apk_urls(version):
-    """Build correct download URLs for the new format."""
+    """Generates correct download URLs for all architectures."""
     base_url = f"{FTP_BASE}{version}/android/fenix-{version}-android-"
     urls = {}
     for arch in ARCHITECTURES:
