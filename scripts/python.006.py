@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 from bs4 import BeautifulSoup
 
+# ========== Configuration ==========
 ARCHITECTURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
 FTP_BASE = "https://archive.mozilla.org/pub/fenix/releases/"
 IRONFOX_REPO = "https://github.com/ironfox-oss/IronFox.git"
@@ -20,6 +21,7 @@ APKTOOL_URL = "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.11.
 SIGNER_JAR = "uber-apk-signer-1.3.0.jar"
 SIGNER_URL = "https://github.com/patrickfav/uber-apk-signer/releases/download/1.3.0/uber-apk-signer-1.3.0.jar"
 
+# ========== Helper Functions ==========
 def run_cmd(cmd, cwd=None):
     print(f"[CMD] {cmd}")
     result = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True)
@@ -43,7 +45,9 @@ def ensure_tool(jar_path, url):
 def fetch_with_retries(url, retries=3, delay=5):
     for attempt in range(retries):
         try:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
             resp = requests.get(url, timeout=30, headers=headers)
             resp.raise_for_status()
             return resp
@@ -55,23 +59,27 @@ def fetch_with_retries(url, retries=3, delay=5):
                 raise
 
 def get_latest_beta_version():
+    """Extract the newest beta version from the directory listing."""
     resp = fetch_with_retries(FTP_BASE)
     soup = BeautifulSoup(resp.text, "html.parser")
     versions = []
     for link in soup.find_all("a"):
         href = link.get("href")
-        if href and href.endswith("/") and "b" in href:
+        if href and href.endswith("/") and href != "../":
             ver = href.rstrip("/")
-            if re.search(r'\d+\.\d+b\d+', ver):
+            # Match version like 151.0b10, 125.0b2, etc.
+            if re.match(r'^\d+(\.\d+)+b\d+$', ver):
                 versions.append(ver)
     if not versions:
         raise RuntimeError("No Beta versions found")
+    # Sort correctly: 151.0b1 < 151.0b2 ... < 151.0b10
     def version_key(v):
         return [int(x) for x in re.split(r'\.|b', v)]
     versions.sort(key=version_key)
     return versions[-1]
 
 def get_apk_urls(version):
+    """Get download URLs for each architecture."""
     base_url = f"{FTP_BASE}{version}/android/"
     resp = fetch_with_retries(base_url)
     soup = BeautifulSoup(resp.text, "html.parser")
