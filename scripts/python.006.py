@@ -8,6 +8,7 @@ import requests
 import subprocess
 from pathlib import Path
 from bs4 import BeautifulSoup
+from packaging import version
 
 # ========== Configuration ==========
 ARCHITECTURES = ["arm64-v8a", "armeabi-v7a", "x86_64"]
@@ -60,36 +61,29 @@ def get_latest_beta_version():
     """Finds the most recent beta version by parsing the directory listing."""
     resp = fetch_with_retries(FTP_BASE)
     soup = BeautifulSoup(resp.text, "html.parser")
-    versions = []
+    beta_versions = []
     for link in soup.find_all('a'):
         href = link.get('href')
-        if href and href.endswith('/') and href != '../':
-            ver = href.rstrip('/')
-            if re.search(r'b\d+$', ver) or re.search(r'-beta\.\d+$', ver):
-                versions.append(ver)
-    if not versions:
-        raise RuntimeError("No beta versions found.")
-    def version_key(v):
-        match = re.match(r'^(\d+(?:\.\d+)+)b(\d+)$', v)
-        if match:
-            base, beta = match.groups()
-            return tuple(map(int, base.split('.'))) + (int(beta),)
-        match = re.match(r'^(\d+\.\d+\.\d+)-beta\.(\d+)$', v)
-        if match:
-            base, beta = match.groups()
-            return tuple(map(int, base.split('.'))) + (int(beta),)
-        return (0,)
-    versions.sort(key=version_key)
-    return versions[-1]
+        if not (href and href.endswith('/') and href != '../'):
+            continue
+        ver = href.rstrip('/')
+        # Accept only the new X.XbX format (e.g., 152.0b1)
+        if re.match(r'^\d+\.\d+b\d+$', ver):
+            beta_versions.append(ver)
+    if not beta_versions:
+        raise RuntimeError("No beta versions found in the new format (X.XbX).")
+    # Sort using packaging.version
+    beta_versions.sort(key=lambda v: version.parse(v))
+    return beta_versions[-1]
 
 def get_apk_urls(version):
-    base_url = f"{FTP_BASE}{version}/android/"
-    dir_name = f"fenix-{version}-android-"
+    """Build correct download URLs for the new format."""
+    base_url = f"{FTP_BASE}{version}/android/fenix-{version}-android-"
     urls = {}
     for arch in ARCHITECTURES:
-        full_dir = f"{dir_name}{arch}"
-        apk_name = f"fenix-{version}.multi.android-{arch}.apk"
-        urls[arch] = f"{base_url}{full_dir}/{apk_name}"
+        folder = f"{base_url}{arch}/"
+        apk_file = f"fenix-{version}.multi.android-{arch}.apk"
+        urls[arch] = folder + apk_file
     return urls
 
 def download_apk(url, dest):
