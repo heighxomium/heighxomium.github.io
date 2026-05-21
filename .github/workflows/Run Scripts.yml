@@ -66,7 +66,7 @@ jobs:
           overwrite: true
           prerelease: false
           make_latest: true
-          check_duplicates: false
+          check_duplicates: true
           body: |
             ## Generated artifacts uploaded directly for testing purposes.
             
