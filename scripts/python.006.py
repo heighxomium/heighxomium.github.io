@@ -475,9 +475,13 @@ def main() -> None:
     # Ensure tools
     ensure_tool(Path(APKTOOL_JAR), APKTOOL_URL)
 
-    # Prepare directories
+    # Prepare directories and clean old APKs
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    LogStatus.success(f"Output directory ready: {OUTPUT_DIR}")
+    # Delete any existing APK files from previous runs
+    for old_apk in OUTPUT_DIR.glob("*.apk"):
+        old_apk.unlink()
+        LogStatus.info(f"Cleaned old APK: {old_apk}")
+    LogStatus.success(f"Output directory ready (cleaned): {OUTPUT_DIR}")
 
     # Fetch overlay
     overlay_dir = fetch_ironfox_overlay(OVERLAY_CACHE_DIR)
@@ -502,10 +506,22 @@ def main() -> None:
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
         try:
             final_apks[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
+            # Delete original downloaded APK after successful rebranding
+            apk_path.unlink()
+            LogStatus.success(f"Deleted original APK: {apk_path}")
         except Exception as e:
             LogStatus.failure(f"Rebranding failed for {arch}: {e}")
-            # Continue with other architectures? For now raise to stop pipeline.
+            # Stop pipeline on any failure (can be changed to continue if desired)
             raise
+
+    # Verify all signed APKs exist
+    missing = []
+    for arch in ARCHITECTURES:
+        expected = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
+        if not expected.exists():
+            missing.append(str(expected))
+    if missing:
+        raise RuntimeError(f"Missing signed APKs after rebranding: {missing}")
 
     # Summary
     LogStatus.step("\n=== Pipeline Summary ===")
