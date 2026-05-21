@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-Iron Fox APK Rebranding Script
-
-This script downloads the latest Firefox Beta APK from Mozilla, rebrands it to
-"Iron Fox", and signs the resulting APK. It is designed to be run in a CI/CD
-pipeline (e.g., GitHub Actions).
-"""
-
 import os
 import re
 import sys
@@ -15,13 +7,12 @@ import time
 import shutil
 import tempfile
 import subprocess
+from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
-
 import requests
 from packaging import version as version_parser
 
-# ========== Logging Helpers ==========
 class LogStatus:
     """Simple status logger with emoji indicators."""
     START = "▶️"
@@ -64,14 +55,11 @@ class LogStatus:
     def step(message: str) -> None:
         LogStatus.print(LogStatus.STEP, message)
 
-# ========== Configuration ==========
 ARCHITECTURES: List[str] = ["arm64-v8a", "armeabi-v7a", "x86_64"]
 
-# Mozilla API endpoints
 MOZILLA_PRODUCT_DETAILS_API: str = "https://product-details.mozilla.org/1.0/"
 FTP_BASE: str = "https://ftp.mozilla.org/pub/fenix/releases/"
 
-# IronFox repository details
 IRONFOX_REPO: str = "https://github.com/ironfox-oss/IronFox.git"
 IRONFOX_OVERLAY_DIR: str = "patches/gecko-overlay/ironfox"   # current location
 
@@ -495,59 +483,38 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
     return archive_path
 
 def main() -> None:
-    """Main orchestration with robust status reporting."""
+def main() -> None:
     LogStatus.step("=== Iron Fox APK Rebranding Pipeline ===")
-
-    # Ensure tools
     ensure_tool(Path(APKTOOL_JAR), APKTOOL_URL)
 
-    # Prepare directories and clean old APKs and archives
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    for old_file in OUTPUT_DIR.glob("*.apk") + OUTPUT_DIR.glob("*.tar.xz"):
+    # Using itertools.chain to combine generators
+    for old_file in chain(OUTPUT_DIR.glob("*.apk"), OUTPUT_DIR.glob("*.tar.xz")):
         old_file.unlink()
         LogStatus.info(f"Cleaned old file: {old_file}")
     LogStatus.success(f"Output directory ready (cleaned): {OUTPUT_DIR}")
 
-    # Fetch overlay
     overlay_dir = fetch_ironfox_overlay(OVERLAY_CACHE_DIR)
-
-    # Get latest version
     version_str = get_latest_beta_version()
-
-    # Download APKs
     apk_urls = get_apk_urls(version_str)
+
     downloaded = {}
     for arch, url in apk_urls.items():
         dest = OUTPUT_DIR / f"fenix-{version_str}-{arch}.apk"
-        try:
-            downloaded[arch] = download_apk(url, dest)
-        except Exception as e:
-            LogStatus.failure(f"Failed to download {arch}: {e}")
-            raise
+        downloaded[arch] = download_apk(url, dest)
 
-    # Rebrand each APK (this now returns archive path)
     final_archives = {}
     for arch, apk_path in downloaded.items():
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
-        try:
-            final_archives[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
-            # Delete original downloaded APK after successful rebranding (already deleted inside rebrand_apk? No, only the signed APK is deleted after compression. The original download is still there)
-            apk_path.unlink()
-            LogStatus.success(f"Deleted original APK: {apk_path}")
-        except Exception as e:
-            LogStatus.failure(f"Rebranding failed for {arch}: {e}")
-            raise
+        final_archives[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
+        apk_path.unlink()
+        LogStatus.success(f"Deleted original APK: {apk_path}")
 
-    # Verify all archives exist
-    missing = []
-    for arch in ARCHITECTURES:
-        expected_archive = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz"
-        if not expected_archive.exists():
-            missing.append(str(expected_archive))
+    missing = [str(OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz") for arch in ARCHITECTURES
+               if not (OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz").exists()]
     if missing:
-        raise RuntimeError(f"Missing compressed archives after rebranding: {missing}")
+        raise RuntimeError(f"Missing compressed archives: {missing}")
 
-    # Summary
     LogStatus.step("\n=== Pipeline Summary ===")
     LogStatus.success(f"Successfully rebranded and compressed {len(final_archives)} APKs")
     for arch, archive_path in final_archives.items():
