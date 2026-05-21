@@ -61,7 +61,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: latest
-          release_name: "Iron Fox APKs (latest beta)"
+          release_name: "Generated Artifacts"
           file: scripts/assets/generated/python.006/*.apk
           file_glob: true
           overwrite: true
