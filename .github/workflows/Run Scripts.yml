@@ -54,12 +54,23 @@ jobs:
         if: ${{ inputs.group3 }}
         run: python scripts/python.006.py
 
-      - name: Upload APKs
+      # Updated: Latest configuration based on official documentation
+      - name: Upload APKs to Release
         if: ${{ inputs.group3 && !inputs.debug }}
-        uses: actions/upload-artifact@v4
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: ironfox-apks
-          path: scripts/assets/generated/python.006/*.apk
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ironfox-latest
+          release_name: "Iron Fox APKs (latest beta)"
+          file: scripts/assets/generated/python.006/*.apk
+          file_glob: true
+          overwrite: true
+          prerelease: true
+          check_duplicates: false
+          body: |
+            ## Generated artifacts uploaded directly for testing purposes.
+            
+            This is unofficial files, try at your own risk.
 
       - name: Commit filter files
         if: ${{ !inputs.debug && (inputs.group1 || inputs.group2) }}
