@@ -61,7 +61,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: latest
           release_name: "Generated Artifacts"
-          file: scripts/assets/generated/python.006/*
+          file: scripts/assets/generated/python.006/*.tar.xz
           file_glob: true
           overwrite: true
           prerelease: false
