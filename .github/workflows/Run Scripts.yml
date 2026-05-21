@@ -54,7 +54,6 @@ jobs:
         if: ${{ inputs.group3 }}
         run: python scripts/python.006.py
 
-      # Updated: Latest configuration based on official documentation
       - name: Upload APKs to Release
         if: ${{ inputs.group3 && !inputs.debug }}
         uses: svenstaro/upload-release-action@v2
