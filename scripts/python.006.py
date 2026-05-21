@@ -56,30 +56,21 @@ class LogStatus:
         LogStatus.print(LogStatus.STEP, message)
 
 ARCHITECTURES: List[str] = ["arm64-v8a", "armeabi-v7a", "x86_64"]
-
 MOZILLA_PRODUCT_DETAILS_API: str = "https://product-details.mozilla.org/1.0/"
 FTP_BASE: str = "https://ftp.mozilla.org/pub/fenix/releases/"
-
 IRONFOX_REPO: str = "https://github.com/ironfox-oss/IronFox.git"
-IRONFOX_OVERLAY_DIR: str = "patches/gecko-overlay/ironfox"   # current location
-
-# Directories
+IRONFOX_OVERLAY_DIR: str = "patches/gecko-overlay/ironfox"
 OUTPUT_DIR: Path = Path("scripts/assets/generated/python.006")
 ICON_CACHE_DIR: Path = Path("ironfox_assets")
 OVERLAY_CACHE_DIR: Path = ICON_CACHE_DIR / "fenix-overlay"
-
-# Tools
 APKTOOL_JAR: str = "apktool.jar"
 APKTOOL_URL: str = "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_3.0.2.jar"
 SIGNER_JAR: str = "uber-apk-signer.jar"
-
-# Rebranding constants
 NEW_PACKAGE_NAME: str = "io.github.ironfox"
 OLD_PACKAGE_NAME: str = "org.mozilla.firefox_beta"
 APP_LABEL: str = "Iron Fox"
 PRIMARY_COLOR: str = "#FF5722"
 
-# ========== Helper Functions with Status Logging ==========
 def run_cmd(cmd_args: List[Union[str, Path]], cwd: Optional[Path] = None) -> subprocess.CompletedProcess:
     """Execute a command safely with status logging."""
     cmd_str = ' '.join(str(arg) for arg in cmd_args)
@@ -251,13 +242,10 @@ def compress_apk(apk_path: Path) -> Path:
     LogStatus.start(f"Compressing {apk_path.name} with xz (max compression)")
     archive_path = apk_path.with_suffix(".tar.xz")
     try:
-        # Use tarfile with xz compression (level 9 = maximum)
         with tarfile.open(archive_path, "w:xz", preset=9) as tar:
             tar.add(apk_path, arcname=apk_path.name)
-        # Verify archive was created
         if not archive_path.exists() or archive_path.stat().st_size == 0:
             raise RuntimeError("Archive creation failed or resulted in empty file")
-        # Delete original APK
         apk_path.unlink()
         LogStatus.success(f"Compressed to {archive_path} (original deleted)")
         return archive_path
@@ -451,19 +439,13 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
             "--force"
         ])
         LogStatus.success("Decompiled successfully")
-
-        # Apply overlay
         apply_overlay(decompiled_dir, overlay_dir)
-
-        # Rebranding steps
         update_all_strings_xml(decompiled_dir)
         replace_icons(decompiled_dir, overlay_dir)
         update_colors_xml(decompiled_dir)
         update_manifest(decompiled_dir)
         update_apktool_yml(decompiled_dir)
         rename_package_in_smali(decompiled_dir)
-
-        # Rebuild
         LogStatus.start("Rebuilding APK")
         unsigned_apk = output_path.with_name(output_path.stem + "_unsigned.apk")
         run_cmd([
@@ -472,54 +454,41 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
             "--output", str(unsigned_apk)
         ])
         LogStatus.success("APK rebuilt")
-
-        # Sign
         sign_apk(unsigned_apk, output_path)
-
-    # Compress the signed APK into .tar.xz and delete the APK
     archive_path = compress_apk(output_path)
-
     LogStatus.success(f"Rebranding complete for {apk_path.name} -> {archive_path}")
     return archive_path
 
-def main() -> None:
 def main() -> None:
     LogStatus.step("=== Iron Fox APK Rebranding Pipeline ===")
     ensure_tool(Path(APKTOOL_JAR), APKTOOL_URL)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    # Using itertools.chain to combine generators
     for old_file in chain(OUTPUT_DIR.glob("*.apk"), OUTPUT_DIR.glob("*.tar.xz")):
         old_file.unlink()
         LogStatus.info(f"Cleaned old file: {old_file}")
     LogStatus.success(f"Output directory ready (cleaned): {OUTPUT_DIR}")
-
     overlay_dir = fetch_ironfox_overlay(OVERLAY_CACHE_DIR)
     version_str = get_latest_beta_version()
     apk_urls = get_apk_urls(version_str)
-
     downloaded = {}
     for arch, url in apk_urls.items():
         dest = OUTPUT_DIR / f"fenix-{version_str}-{arch}.apk"
         downloaded[arch] = download_apk(url, dest)
-
     final_archives = {}
     for arch, apk_path in downloaded.items():
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
         final_archives[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
         apk_path.unlink()
         LogStatus.success(f"Deleted original APK: {apk_path}")
-
     missing = [str(OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz") for arch in ARCHITECTURES
                if not (OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz").exists()]
     if missing:
         raise RuntimeError(f"Missing compressed archives: {missing}")
-
     LogStatus.step("\n=== Pipeline Summary ===")
     LogStatus.success(f"Successfully rebranded and compressed {len(final_archives)} APKs")
     for arch, archive_path in final_archives.items():
         size_mb = archive_path.stat().st_size / (1024 * 1024)
         print(f"  {arch}: {archive_path} ({size_mb:.2f} MB)")
-
 if __name__ == "__main__":
     main()
