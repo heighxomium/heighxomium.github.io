@@ -254,6 +254,29 @@ def fetch_ironfox_overlay(cache_dir: Path) -> Path:
             raise
     return cache_dir
 
+def compress_apk(apk_path: Path) -> Path:
+    """
+    Compress an APK file into a .tar.xz archive using maximum compression.
+    Deletes the original APK after successful archiving.
+    Returns the path to the archive.
+    """
+    LogStatus.start(f"Compressing {apk_path.name} with xz (max compression)")
+    archive_path = apk_path.with_suffix(".tar.xz")
+    try:
+        # Use tarfile with xz compression (level 9 = maximum)
+        with tarfile.open(archive_path, "w:xz", preset=9) as tar:
+            tar.add(apk_path, arcname=apk_path.name)
+        # Verify archive was created
+        if not archive_path.exists() or archive_path.stat().st_size == 0:
+            raise RuntimeError("Archive creation failed or resulted in empty file")
+        # Delete original APK
+        apk_path.unlink()
+        LogStatus.success(f"Compressed to {archive_path} (original deleted)")
+        return archive_path
+    except Exception as e:
+        LogStatus.failure(f"Compression failed: {e}")
+        raise
+
 def apply_overlay(decompiled_dir: Path, overlay_dir: Path) -> None:
     """Copy overlay files."""
     LogStatus.start("Applying IronFox overlay")
@@ -426,7 +449,7 @@ def sign_apk(apk_path: Path, output_path: Path) -> None:
         raise
 
 def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
-    """Main rebranding pipeline for one APK."""
+    """Main rebranding pipeline for one APK. Returns path to compressed archive."""
     LogStatus.step(f"Rebranding {apk_path.name}")
     with tempfile.TemporaryDirectory(prefix="rebrand_") as work_dir:
         decompiled_dir = Path(work_dir) / "decompiled"
@@ -465,8 +488,11 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
         # Sign
         sign_apk(unsigned_apk, output_path)
 
-    LogStatus.success(f"Rebranding complete for {apk_path.name}")
-    return output_path
+    # Compress the signed APK into .tar.xz and delete the APK
+    archive_path = compress_apk(output_path)
+
+    LogStatus.success(f"Rebranding complete for {apk_path.name} -> {archive_path}")
+    return archive_path
 
 def main() -> None:
     """Main orchestration with robust status reporting."""
@@ -475,12 +501,11 @@ def main() -> None:
     # Ensure tools
     ensure_tool(Path(APKTOOL_JAR), APKTOOL_URL)
 
-    # Prepare directories and clean old APKs
+    # Prepare directories and clean old APKs and archives
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    # Delete any existing APK files from previous runs
-    for old_apk in OUTPUT_DIR.glob("*.apk"):
-        old_apk.unlink()
-        LogStatus.info(f"Cleaned old APK: {old_apk}")
+    for old_file in OUTPUT_DIR.glob("*.apk") + OUTPUT_DIR.glob("*.tar.xz"):
+        old_file.unlink()
+        LogStatus.info(f"Cleaned old file: {old_file}")
     LogStatus.success(f"Output directory ready (cleaned): {OUTPUT_DIR}")
 
     # Fetch overlay
@@ -500,34 +525,34 @@ def main() -> None:
             LogStatus.failure(f"Failed to download {arch}: {e}")
             raise
 
-    # Rebrand each APK
-    final_apks = {}
+    # Rebrand each APK (this now returns archive path)
+    final_archives = {}
     for arch, apk_path in downloaded.items():
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
         try:
-            final_apks[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
-            # Delete original downloaded APK after successful rebranding
+            final_archives[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
+            # Delete original downloaded APK after successful rebranding (already deleted inside rebrand_apk? No, only the signed APK is deleted after compression. The original download is still there)
             apk_path.unlink()
             LogStatus.success(f"Deleted original APK: {apk_path}")
         except Exception as e:
             LogStatus.failure(f"Rebranding failed for {arch}: {e}")
-            # Stop pipeline on any failure (can be changed to continue if desired)
             raise
 
-    # Verify all signed APKs exist
+    # Verify all archives exist
     missing = []
     for arch in ARCHITECTURES:
-        expected = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
-        if not expected.exists():
-            missing.append(str(expected))
+        expected_archive = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz"
+        if not expected_archive.exists():
+            missing.append(str(expected_archive))
     if missing:
-        raise RuntimeError(f"Missing signed APKs after rebranding: {missing}")
+        raise RuntimeError(f"Missing compressed archives after rebranding: {missing}")
 
     # Summary
     LogStatus.step("\n=== Pipeline Summary ===")
-    LogStatus.success(f"Successfully rebranded {len(final_apks)} APKs")
-    for arch, path in final_apks.items():
-        print(f"  {arch}: {path}")
+    LogStatus.success(f"Successfully rebranded and compressed {len(final_archives)} APKs")
+    for arch, archive_path in final_archives.items():
+        size_mb = archive_path.stat().st_size / (1024 * 1024)
+        print(f"  {arch}: {archive_path} ({size_mb:.2f} MB)")
 
 if __name__ == "__main__":
     main()
