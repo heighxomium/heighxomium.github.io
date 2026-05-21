@@ -7,6 +7,7 @@ import time
 import shutil
 import tempfile
 import subprocess
+import tarfile
 from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
