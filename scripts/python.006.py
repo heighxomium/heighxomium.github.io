@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import re
 import sys
@@ -12,10 +13,9 @@ from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 import requests
-from packaging import version as version_parser
+
 
 class LogStatus:
-    """Simple status logger with emoji indicators."""
     START = "▶️"
     SUCCESS = "✅"
     FAILURE = "❌"
@@ -56,6 +56,7 @@ class LogStatus:
     def step(message: str) -> None:
         LogStatus.print(LogStatus.STEP, message)
 
+
 ARCHITECTURES: List[str] = ["arm64-v8a", "armeabi-v7a", "x86_64"]
 MOZILLA_PRODUCT_DETAILS_API: str = "https://product-details.mozilla.org/1.0/"
 FTP_BASE: str = "https://ftp.mozilla.org/pub/fenix/releases/"
@@ -72,8 +73,8 @@ OLD_PACKAGE_NAME: str = "org.mozilla.firefox_beta"
 APP_LABEL: str = "Iron Fox"
 PRIMARY_COLOR: str = "#FF5722"
 
+
 def run_cmd(cmd_args: List[Union[str, Path]], cwd: Optional[Path] = None) -> subprocess.CompletedProcess:
-    """Execute a command safely with status logging."""
     cmd_str = ' '.join(str(arg) for arg in cmd_args)
     LogStatus.info(f"Executing: {cmd_str}")
     try:
@@ -96,8 +97,8 @@ def run_cmd(cmd_args: List[Union[str, Path]], cwd: Optional[Path] = None) -> sub
         LogStatus.failure(f"Command execution failed: {e}")
         raise
 
+
 def download_file(url: str, dest_path: Path, headers: Optional[Dict[str, str]] = None) -> bool:
-    """Download a file with retries and status logging."""
     headers = headers or {'User-Agent': 'IronFox-Rebrander/1.0'}
     for attempt in range(3):
         try:
@@ -119,8 +120,8 @@ def download_file(url: str, dest_path: Path, headers: Optional[Dict[str, str]] =
             time.sleep(5)
     return False
 
+
 def ensure_tool(jar_path: Path, url: str) -> Path:
-    """Ensure tool exists, download if missing."""
     if jar_path.exists():
         LogStatus.skip(f"Tool {jar_path} already exists")
         return jar_path
@@ -128,8 +129,8 @@ def ensure_tool(jar_path: Path, url: str) -> Path:
     download_file(url, jar_path, headers={'User-Agent': 'IronFox-Rebrander/1.0'})
     return jar_path
 
+
 def fetch_latest_uber_apk_signer(jar_path: Path) -> Path:
-    """Download latest uber-apk-signer from GitHub releases."""
     if jar_path.exists():
         LogStatus.skip(f"Signer {jar_path} already exists")
         return jar_path
@@ -166,8 +167,8 @@ def fetch_latest_uber_apk_signer(jar_path: Path) -> Path:
     download_file(asset_url, jar_path, headers={'User-Agent': 'IronFox-Rebrander/1.0'})
     return jar_path
 
+
 def get_latest_beta_version() -> str:
-    """Fetch latest beta version from Mozilla API."""
     LogStatus.start("Fetching latest Firefox Beta version from Mozilla API")
     url = f"{MOZILLA_PRODUCT_DETAILS_API}mobile_versions.json"
     headers = {'User-Agent': 'IronFox-Rebrander/1.0'}
@@ -184,8 +185,8 @@ def get_latest_beta_version() -> str:
         LogStatus.failure(f"Failed to get version: {e}")
         raise
 
+
 def get_apk_urls(version_str: str) -> Dict[str, str]:
-    """Generate download URLs."""
     base_url = f"{FTP_BASE}{version_str}/android/fenix-{version_str}-android-"
     urls = {}
     for arch in ARCHITECTURES:
@@ -193,14 +194,14 @@ def get_apk_urls(version_str: str) -> Dict[str, str]:
     LogStatus.info(f"Generated URLs for {len(urls)} architectures")
     return urls
 
+
 def download_apk(url: str, dest_path: Path) -> Path:
-    """Download APK with status."""
     LogStatus.start(f"Downloading APK for {dest_path.parent.name}/{dest_path.name}")
     download_file(url, dest_path, headers={'User-Agent': 'IronFox-Rebrander/1.0'})
     return dest_path
 
+
 def locate_overlay(repo_root: Path) -> Path:
-    """Search for overlay directory."""
     possible_paths = [
         "fenix-overlay",
         "patches/gecko-overlay/ironfox",
@@ -214,8 +215,8 @@ def locate_overlay(repo_root: Path) -> Path:
             return full_path
     raise RuntimeError(f"Could not find overlay directory in {repo_root}")
 
+
 def fetch_ironfox_overlay(cache_dir: Path) -> Path:
-    """Clone repo and cache overlay."""
     if cache_dir.exists():
         LogStatus.skip(f"Overlay already cached at {cache_dir}")
         return cache_dir
@@ -234,12 +235,8 @@ def fetch_ironfox_overlay(cache_dir: Path) -> Path:
             raise
     return cache_dir
 
+
 def compress_apk(apk_path: Path) -> Path:
-    """
-    Compress an APK file into a .tar.xz archive using maximum compression.
-    Deletes the original APK after successful archiving.
-    Returns the path to the archive.
-    """
     LogStatus.start(f"Compressing {apk_path.name} with xz (max compression)")
     archive_path = apk_path.with_suffix(".tar.xz")
     try:
@@ -254,8 +251,8 @@ def compress_apk(apk_path: Path) -> Path:
         LogStatus.failure(f"Compression failed: {e}")
         raise
 
+
 def apply_overlay(decompiled_dir: Path, overlay_dir: Path) -> None:
-    """Copy overlay files."""
     LogStatus.start("Applying IronFox overlay")
     try:
         for item in overlay_dir.iterdir():
@@ -269,8 +266,8 @@ def apply_overlay(decompiled_dir: Path, overlay_dir: Path) -> None:
         LogStatus.failure(f"Failed to apply overlay: {e}")
         raise
 
+
 def update_all_strings_xml(decompiled_dir: Path) -> None:
-    """Update strings in all locales."""
     LogStatus.start("Updating app strings in all locales")
     count = 0
     for strings_file in decompiled_dir.rglob("strings.xml"):
@@ -293,8 +290,8 @@ def update_all_strings_xml(decompiled_dir: Path) -> None:
             count += 1
     LogStatus.success(f"Updated strings in {count} files")
 
+
 def update_colors_xml(decompiled_dir: Path) -> None:
-    """Update primary color."""
     LogStatus.start("Updating brand colors")
     colors_file = decompiled_dir / "res/values/colors.xml"
     if not colors_file.exists():
@@ -315,8 +312,8 @@ def update_colors_xml(decompiled_dir: Path) -> None:
     except Exception as e:
         LogStatus.warning(f"Could not update colors: {e}")
 
+
 def replace_icons(decompiled_dir: Path, overlay_dir: Path) -> None:
-    """Replace launcher icons if available."""
     LogStatus.start("Replacing app icons")
     custom_icons = overlay_dir / "icons"
     if not custom_icons.exists():
@@ -337,8 +334,8 @@ def replace_icons(decompiled_dir: Path, overlay_dir: Path) -> None:
     else:
         LogStatus.warning("No matching icon densities found")
 
+
 def update_apktool_yml(decompiled_dir: Path, version_code_increment: int = 1) -> None:
-    """Update apktool.yml version fields."""
     LogStatus.start("Updating apktool.yml")
     yml_file = decompiled_dir / "apktool.yml"
     if not yml_file.exists():
@@ -364,8 +361,8 @@ def update_apktool_yml(decompiled_dir: Path, version_code_increment: int = 1) ->
         LogStatus.failure(f"Failed to update apktool.yml: {e}")
         raise
 
+
 def rename_package_in_smali(decompiled_dir: Path) -> None:
-    """Replace package name in all smali files."""
     LogStatus.start("Renaming package in smali files")
     old_slashes = OLD_PACKAGE_NAME.replace(".", "/")
     new_slashes = NEW_PACKAGE_NAME.replace(".", "/")
@@ -384,8 +381,8 @@ def rename_package_in_smali(decompiled_dir: Path) -> None:
             count += 1
     LogStatus.success(f"Updated package name in {count} smali files")
 
+
 def update_manifest(decompiled_dir: Path) -> None:
-    """Update AndroidManifest.xml."""
     LogStatus.start("Updating AndroidManifest.xml")
     manifest = decompiled_dir / "AndroidManifest.xml"
     if not manifest.exists():
@@ -408,30 +405,35 @@ def update_manifest(decompiled_dir: Path) -> None:
         LogStatus.failure(f"Failed to update manifest: {e}")
         raise
 
+
 def sign_apk(apk_path: Path, output_path: Path) -> None:
-    """Sign APK using uber-apk-signer."""
     LogStatus.start(f"Signing {apk_path.name}")
     signer_jar = fetch_latest_uber_apk_signer(Path(SIGNER_JAR))
-    try:
+
+    with tempfile.TemporaryDirectory(prefix="signer_") as temp_dir:
+        temp_dir_path = Path(temp_dir)
         run_cmd([
             "java", "-jar", str(signer_jar),
             "-a", str(apk_path),
-            "-o", str(output_path),
+            "-o", str(temp_dir_path),
             "--allowResign"
         ])
-        apk_path.unlink()
-        LogStatus.success(f"Signed APK saved to {output_path}")
-    except Exception as e:
-        LogStatus.failure(f"Signing failed: {e}")
-        raise
+        signed_files = list(temp_dir_path.glob("*.apk"))
+        if not signed_files:
+            raise RuntimeError("No signed APK found in output directory")
+        signed_apk = signed_files[0]
+        shutil.move(str(signed_apk), str(output_path))
+        LogStatus.success(f"Signed APK moved to {output_path}")
+
+    apk_path.unlink()
+    LogStatus.success(f"Deleted unsigned APK: {apk_path}")
+
 
 def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
-    """Main rebranding pipeline for one APK. Returns path to compressed archive."""
     LogStatus.step(f"Rebranding {apk_path.name}")
     with tempfile.TemporaryDirectory(prefix="rebrand_") as work_dir:
         decompiled_dir = Path(work_dir) / "decompiled"
 
-        # Decompile
         LogStatus.start("Decompiling APK")
         run_cmd([
             "java", "-jar", APKTOOL_JAR,
@@ -440,6 +442,7 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
             "--force"
         ])
         LogStatus.success("Decompiled successfully")
+
         apply_overlay(decompiled_dir, overlay_dir)
         update_all_strings_xml(decompiled_dir)
         replace_icons(decompiled_dir, overlay_dir)
@@ -447,6 +450,7 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
         update_manifest(decompiled_dir)
         update_apktool_yml(decompiled_dir)
         rename_package_in_smali(decompiled_dir)
+
         LogStatus.start("Rebuilding APK")
         unsigned_apk = output_path.with_name(output_path.stem + "_unsigned.apk")
         run_cmd([
@@ -455,10 +459,13 @@ def rebrand_apk(apk_path: Path, output_path: Path, overlay_dir: Path) -> Path:
             "--output", str(unsigned_apk)
         ])
         LogStatus.success("APK rebuilt")
+
         sign_apk(unsigned_apk, output_path)
+
     archive_path = compress_apk(output_path)
     LogStatus.success(f"Rebranding complete for {apk_path.name} -> {archive_path}")
     return archive_path
+
 
 def main() -> None:
     LogStatus.step("=== Iron Fox APK Rebranding Pipeline ===")
@@ -469,27 +476,37 @@ def main() -> None:
         old_file.unlink()
         LogStatus.info(f"Cleaned old file: {old_file}")
     LogStatus.success(f"Output directory ready (cleaned): {OUTPUT_DIR}")
+
     overlay_dir = fetch_ironfox_overlay(OVERLAY_CACHE_DIR)
     version_str = get_latest_beta_version()
     apk_urls = get_apk_urls(version_str)
+
     downloaded = {}
     for arch, url in apk_urls.items():
         dest = OUTPUT_DIR / f"fenix-{version_str}-{arch}.apk"
         downloaded[arch] = download_apk(url, dest)
+
     final_archives = {}
     for arch, apk_path in downloaded.items():
         output_apk = OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.apk"
         final_archives[arch] = rebrand_apk(apk_path, output_apk, overlay_dir)
         apk_path.unlink()
         LogStatus.success(f"Deleted original APK: {apk_path}")
-    missing = [str(OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz") for arch in ARCHITECTURES
-               if not (OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz").exists()]
+
+    missing = [
+        str(OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz")
+        for arch in ARCHITECTURES
+        if not (OUTPUT_DIR / f"ironfox-{version_str}-{arch}-signed.tar.xz").exists()
+    ]
     if missing:
         raise RuntimeError(f"Missing compressed archives: {missing}")
+
     LogStatus.step("\n=== Pipeline Summary ===")
     LogStatus.success(f"Successfully rebranded and compressed {len(final_archives)} APKs")
     for arch, archive_path in final_archives.items():
         size_mb = archive_path.stat().st_size / (1024 * 1024)
         print(f"  {arch}: {archive_path} ({size_mb:.2f} MB)")
+
+
 if __name__ == "__main__":
     main()
